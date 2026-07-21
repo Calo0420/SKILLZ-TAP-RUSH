@@ -29,7 +29,7 @@
 
 ### Workspace Setup
 - [x] VPS workspace: /opt/SKILLZ-TAP-RUSH/ (production, git-tracked)
-- [x] Local workspace: C:\Users\osreyes\Documents\GridRush (development, no git)
+- [x] Local workspace: C:\Users\osreyes\Documents\TapRush (development, no git)
 - [x] References documented in all briefing files
 
 ---
@@ -58,7 +58,7 @@ git push origin main
 
 ## Next Steps for Calo
 
-1. Create Unity project locally in C:\Users\osreyes\Documents\GridRush
+1. Create Unity project locally in C:\Users\osreyes\Documents\TapRush
 2. Import Skillz SDK
 3. Push to GitHub: git@github.com:Calo0420/SKILLZ-TAP-RUSH.git
 4. Copilot CLI will automatically pull to VPS
@@ -107,7 +107,7 @@ git push origin main
 - **Roadmap:** TAP-RUSH-ROADMAP.md (this repo)
 - **Briefing (Local):** .copilot/session-state/.../SKILLZ-TAP-RUSH-COMPLETE.md
 - **FatMemory (VPS):** /root/.claude/CLAUDE.md
-- **Workspace (Local):** C:\Users\osreyes\Documents\GridRush
+- **Workspace (Local):** C:\Users\osreyes\Documents\TapRush
 
 ---
 

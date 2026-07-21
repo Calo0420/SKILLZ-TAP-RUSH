@@ -34,4 +34,4 @@ Ground Rules:
 Workspace:
 GitHub: git@github.com:Calo0420/SKILLZ-TAP-RUSH.git
 VPS: /opt/SKILLZ-TAP-RUSH/
-Local: C:\Users\osreyes\Documents\GridRush
+Local: C:\Users\osreyes\Documents\TapRush
