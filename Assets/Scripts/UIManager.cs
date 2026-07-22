@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI comboText;
 
     void Awake()
     {
@@ -16,11 +17,34 @@ public class UIManager : MonoBehaviour
 
     public void UpdateScore(int score)
     {
-        if (scoreText != null) scoreText.text = "Score: " + score;
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + score;
+        }
     }
 
     public void UpdateTimer(float time)
     {
-        if (timerText != null) timerText.text = Mathf.CeilToInt(time).ToString();
+        if (timerText != null)
+        {
+            timerText.text = Mathf.CeilToInt(time).ToString();
+        }
+    }
+
+    public void UpdateCombo(int combo)
+    {
+        if (comboText == null)
+        {
+            return;
+        }
+
+        if (combo <= 1)
+        {
+            comboText.text = string.Empty;
+        }
+        else
+        {
+            comboText.text = "Combo x" + combo;
+        }
     }
 }
