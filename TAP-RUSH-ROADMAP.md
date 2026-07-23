@@ -13,8 +13,21 @@ Exit: Tap targets 60s, see score change.
 ## PHASE 2 - Scoring & Feel (Days 7-9)
 Exit: Full match feels like a game.
 
+Status: COMPLETE (2026-07-22)
+Delivered:
+- Stable wrong-tap penalty and combo reset behavior
+- Combo milestones at x5/x10 with dedicated milestone sound
+- Combo popup feedback and camera shake
+- Runtime end screen fallback flow
+- Input-system compatible tap detection
+
 ## PHASE 3 - Deterministic/Seeded (Days 10-13) CRITICAL
 Exit: Same seed = identical spawns on every device.
+
+Next Actions:
+- Deterministic RNG seed path for target spawns
+- Seed handoff through match/session bootstrap
+- Replay validation: same seed -> same spawn sequence
 
 ## PHASE 4 - Skillz SDK Integration (Days 14-18)
 Exit: Full match through actual Skillz sandbox.

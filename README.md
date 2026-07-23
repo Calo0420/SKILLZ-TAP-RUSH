@@ -9,6 +9,19 @@ A gaming application built for skillz.com using Unity Editor.
 - **Clue** — Strategy, architecture
 - **Copilot CLI** — Code execution, repo management, VPS ops
 
+## Current Status (2026-07-22)
+
+- Phase 2 complete: scoring/feel loop is stable
+- Combo milestones trigger correctly at streak x5/x10
+- Wrong-tap penalty and combo reset are working as intended
+- Runtime end screen fallback is implemented
+- Repositories synced to commit `0e3516f` on `main` (local + GitHub + VPS)
+
+## Next Focus
+
+- Phase 3 deterministic/seeded spawning (critical)
+- Skillz-ready reproducibility checks
+
 ## Repository Structure
 
 `
