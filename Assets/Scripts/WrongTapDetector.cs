@@ -17,7 +17,7 @@ public class WrongTapDetector : MonoBehaviour
             return;
         }
 
-        if (!TryGetPrimaryPressThisFrame(out Vector2 screenPos))
+        if (!WasPrimaryPressThisFrame())
         {
             return;
         }
@@ -33,6 +33,7 @@ public class WrongTapDetector : MonoBehaviour
             return;
         }
 
+        Vector2 screenPos = GetPointerScreenPosition();
         if (TryTapTargetAtPointer(screenPos, cam))
         {
             return;
@@ -114,39 +115,45 @@ public class WrongTapDetector : MonoBehaviour
         return false;
     }
 
-    private static bool TryGetPrimaryPressThisFrame(out Vector2 screenPos)
+    private static bool WasPrimaryPressThisFrame()
     {
-        screenPos = Vector2.zero;
-
 #if ENABLE_INPUT_SYSTEM
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
-            screenPos = Mouse.current.position.ReadValue();
             return true;
         }
 
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
         {
-            screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
             return true;
         }
 #endif
 
-        try
-        {
 #if ENABLE_LEGACY_INPUT_MANAGER
-            if (Input.GetMouseButtonDown(0))
-            {
-                screenPos = Input.mousePosition;
-                return true;
-            }
+        return Input.GetMouseButtonDown(0);
+#else
+        return false;
 #endif
-        }
-        catch
+    }
+
+    private static Vector2 GetPointerScreenPosition()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (Mouse.current != null)
         {
-            // Ignore legacy input exceptions when project is configured for Input System only.
+            return Mouse.current.position.ReadValue();
         }
 
-        return false;
+        if (Touchscreen.current != null)
+        {
+            return Touchscreen.current.primaryTouch.position.ReadValue();
+        }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+        return Input.mousePosition;
+#else
+        return Vector2.zero;
+#endif
     }
 }
