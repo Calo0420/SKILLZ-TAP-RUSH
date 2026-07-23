@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
-using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -34,17 +33,17 @@ public class WrongTapDetector : MonoBehaviour
         }
 
         Vector2 screenPos = GetPointerScreenPosition();
+        if (IsPointerOverUi(screenPos))
+        {
+            return;
+        }
+
         if (TryTapTargetAtPointer(screenPos, cam))
         {
             return;
         }
 
         if (Target.WasTapConsumedThisFrame())
-        {
-            return;
-        }
-
-        if (IsPointerOverBlockingUi(screenPos))
         {
             return;
         }
@@ -60,7 +59,7 @@ public class WrongTapDetector : MonoBehaviour
         GameManager.Instance.RegisterWrongTap();
     }
 
-    private static bool IsPointerOverBlockingUi(Vector2 screenPos)
+    private static bool IsPointerOverUi(Vector2 screenPos)
     {
         if (EventSystem.current == null)
         {
@@ -74,16 +73,7 @@ public class WrongTapDetector : MonoBehaviour
 
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, results);
-
-        for (int i = 0; i < results.Count; i++)
-        {
-            if (results[i].gameObject.GetComponentInParent<Selectable>() != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return results.Count > 0;
     }
 
     private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
