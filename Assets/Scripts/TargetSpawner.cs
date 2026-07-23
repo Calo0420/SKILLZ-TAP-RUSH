@@ -14,6 +14,7 @@ public class TargetSpawner : MonoBehaviour
 
     private float spawnTimer;
     private bool spawning;
+    private int activeTargetCount;
 
     void Awake()
     {
@@ -25,6 +26,7 @@ public class TargetSpawner : MonoBehaviour
     {
         spawning = true;
         spawnTimer = spawnInterval;
+        activeTargetCount = 0;
     }
 
     public void StopSpawning()
@@ -36,7 +38,7 @@ public class TargetSpawner : MonoBehaviour
     {
         if (!spawning || !GameManager.Instance.IsGameActive) return;
 
-        if (singleActiveTarget && FindAnyObjectByType<Target>() != null)
+        if (singleActiveTarget && activeTargetCount > 0)
         {
             return;
         }
@@ -56,6 +58,19 @@ public class TargetSpawner : MonoBehaviour
             Random.Range(yMin, yMax),
             0f
         );
-        Instantiate(targetPrefab, pos, Quaternion.identity);
+
+        GameObject spawned = Instantiate(targetPrefab, pos, Quaternion.identity);
+        Target target = spawned.GetComponentInChildren<Target>();
+        if (target != null)
+        {
+            activeTargetCount++;
+            target.Destroyed += OnTargetDestroyed;
+        }
+    }
+
+    private void OnTargetDestroyed(Target target)
+    {
+        target.Destroyed -= OnTargetDestroyed;
+        activeTargetCount = Mathf.Max(0, activeTargetCount - 1);
     }
 }

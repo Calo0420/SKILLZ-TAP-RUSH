@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 public class Target : MonoBehaviour
 {
@@ -7,7 +8,10 @@ public class Target : MonoBehaviour
     private static int lastConsumedTapFrame = -1;
 
     private bool tapped;
+    private bool destroyEventSent;
     private float spawnTime;
+
+    public event Action<Target> Destroyed;
 
     public static bool WasTapConsumedThisFrame()
     {
@@ -53,5 +57,16 @@ public class Target : MonoBehaviour
 
         GameManager.Instance?.RegisterMiss();
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (destroyEventSent)
+        {
+            return;
+        }
+
+        destroyEventSent = true;
+        Destroyed?.Invoke(this);
     }
 }
