@@ -40,18 +40,6 @@ public class TargetSpawner : MonoBehaviour
 
         if (singleActiveTarget && activeTargetCount > 0)
         {
-            if (FindAnyObjectByType<Target>() == null)
-            {
-                activeTargetCount = 0;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        if (singleActiveTarget && activeTargetCount > 0)
-        {
             return;
         }
 
