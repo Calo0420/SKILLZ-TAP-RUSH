@@ -14,6 +14,7 @@ public class TargetSpawner : MonoBehaviour
 
     private float spawnTimer;
     private bool spawning;
+    private Target currentTarget;
 
     void Awake()
     {
@@ -25,6 +26,7 @@ public class TargetSpawner : MonoBehaviour
     {
         spawning = true;
         spawnTimer = spawnInterval;
+        currentTarget = null;
     }
 
     public void StopSpawning()
@@ -36,7 +38,7 @@ public class TargetSpawner : MonoBehaviour
     {
         if (!spawning || !GameManager.Instance.IsGameActive) return;
 
-        if (singleActiveTarget && FindAnyObjectByType<Target>() != null)
+        if (singleActiveTarget && currentTarget != null)
         {
             return;
         }
@@ -56,6 +58,14 @@ public class TargetSpawner : MonoBehaviour
             Random.Range(yMin, yMax),
             0f
         );
-        Instantiate(targetPrefab, pos, Quaternion.identity);
+
+        GameObject spawned = Instantiate(targetPrefab, pos, Quaternion.identity);
+        currentTarget = spawned.GetComponent<Target>();
+
+        // Fallback in case the script sits on a child of the spawned prefab.
+        if (currentTarget == null)
+        {
+            currentTarget = spawned.GetComponentInChildren<Target>();
+        }
     }
 }
