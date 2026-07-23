@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    private const string MainMenuSceneName = "MainMenu";
+    private const string EndScreenSceneName = "EndScreen";
+
     public static GameManager Instance { get; private set; }
 
     [Header("Scoring")]
@@ -10,7 +14,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int wrongTapPenalty = 75;
     [SerializeField] private bool debugComboMilestones = false;
     [SerializeField] private bool debugComboResets = false;
-    [SerializeField] private bool verboseDebugLogs = false;
 
     public int Score { get; private set; }
     public int ComboCount { get; private set; }
@@ -45,10 +48,7 @@ public class GameManager : MonoBehaviour
         }
 
         ComboCount++;
-        if (verboseDebugLogs)
-        {
-            Debug.Log($"[TapRush] RegisterHit: ComboCount={ComboCount}");
-        }
+        Debug.Log($"[TapRush] RegisterHit: ComboCount={ComboCount}");
 
         float comboMultiplier = 1f;
         if (ComboCount >= 10)
@@ -125,10 +125,25 @@ public class GameManager : MonoBehaviour
 
         GameSessionData.LastScore = Score;
 
-        if (UIManager.Instance == null || !UIManager.Instance.ShowEndScreen(Score))
+        if (UIManager.Instance != null && UIManager.Instance.ShowEndScreen(Score))
         {
-            Debug.LogWarning("[TapRush] Runtime end screen could not be displayed (UIManager missing or failed).");
+            return;
         }
+
+        // Load end screen when present; otherwise return to main menu to avoid flow breaks.
+        if (CanLoadScene(EndScreenSceneName))
+        {
+            SceneManager.LoadScene(EndScreenSceneName);
+            return;
+        }
+
+        Debug.LogWarning("[TapRush] EndScreen scene is not in Build Settings. Returning to MainMenu.");
+        SceneManager.LoadScene(MainMenuSceneName);
+    }
+
+    private static bool CanLoadScene(string sceneName)
+    {
+        return Application.CanStreamedLevelBeLoaded(sceneName);
     }
 
     private void ResetCombo(string reason)
@@ -138,10 +153,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (verboseDebugLogs)
-        {
-            Debug.Log($"[TapRush] Combo reset ({reason}): ComboCount {ComboCount} -> 0");
-        }
+        Debug.Log($"[TapRush] Combo reset ({reason}): ComboCount {ComboCount} -> 0");
 
         ComboCount = 0;
         UIManager.Instance?.UpdateCombo(ComboCount);
