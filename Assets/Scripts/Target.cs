@@ -4,8 +4,15 @@ public class Target : MonoBehaviour
 {
     [SerializeField] private float lifetime = 2f;
 
+    private static int lastConsumedTapFrame = -1;
+
     private bool tapped;
     private float spawnTime;
+
+    public static bool WasTapConsumedThisFrame()
+    {
+        return Time.frameCount == lastConsumedTapFrame;
+    }
 
     void Start()
     {
@@ -15,17 +22,18 @@ public class Target : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (tapped || GameManager.Instance == null || !GameManager.Instance.IsGameActive)
-        {
-            return;
-        }
-
-        Tap();
+        TryTap();
     }
 
-    private void Tap()
+    public bool TryTap()
     {
+        if (tapped || GameManager.Instance == null || !GameManager.Instance.IsGameActive)
+        {
+            return false;
+        }
+
         tapped = true;
+        lastConsumedTapFrame = Time.frameCount;
         CancelInvoke(nameof(Miss));
 
         float elapsed = Time.time - spawnTime;
@@ -33,6 +41,7 @@ public class Target : MonoBehaviour
         GameManager.Instance?.RegisterHit(speedScore01);
 
         Destroy(gameObject);
+        return true;
     }
 
     private void Miss()

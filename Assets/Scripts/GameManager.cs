@@ -1,15 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
+    private const string MainMenuSceneName = "MainMenu";
+    private const string EndScreenSceneName = "EndScreen";
+
     public static GameManager Instance { get; private set; }
 
     [Header("Scoring")]
     [SerializeField] private int baseTapPoints = 100;
     [SerializeField] private int maxSpeedBonus = 50;
     [SerializeField] private int wrongTapPenalty = 75;
+    [SerializeField] private bool debugComboMilestones = false;
+    [SerializeField] private bool debugComboResets = false;
 
     public int Score { get; private set; }
     public int ComboCount { get; private set; }
@@ -24,19 +28,6 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
-    }
-
-    void Update()
-    {
-        if (!IsGameActive)
-        {
-            return;
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            CheckWrongTap();
-        }
     }
 
     public void StartGame()
@@ -57,6 +48,7 @@ public class GameManager : MonoBehaviour
         }
 
         ComboCount++;
+        Debug.Log($"[TapRush] RegisterHit: ComboCount={ComboCount}");
 
         float comboMultiplier = 1f;
         if (ComboCount >= 10)
@@ -78,7 +70,13 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance?.PlayCorrectTap();
         if (ComboCount > 0 && ComboCount % 5 == 0)
         {
+            if (debugComboMilestones)
+            {
+                Debug.Log("[TapRush] Combo milestone reached at streak x" + ComboCount);
+            }
+
             AudioManager.Instance?.PlayComboMilestone();
+            UIManager.Instance?.ShowComboMilestone(ComboCount);
         }
     }
 
@@ -89,7 +87,12 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        ResetCombo();
+        if (debugComboResets && ComboCount > 1)
+        {
+            Debug.Log("[TapRush] Combo reset due to missed target at combo x" + ComboCount);
+        }
+
+        ResetCombo("missed target");
     }
 
     public void RegisterWrongTap()
@@ -105,7 +108,12 @@ public class GameManager : MonoBehaviour
             Score = 0;
         }
 
-        ResetCombo();
+        if (debugComboResets && ComboCount > 1)
+        {
+            Debug.Log("[TapRush] Combo reset due to wrong tap at combo x" + ComboCount);
+        }
+
+        ResetCombo("wrong tap");
         UIManager.Instance?.UpdateScore(Score);
         AudioManager.Instance?.PlayWrongTap();
     }
@@ -116,42 +124,38 @@ public class GameManager : MonoBehaviour
         TargetSpawner.Instance?.StopSpawning();
 
         GameSessionData.LastScore = Score;
-        SceneManager.LoadScene("EndScreen");
+
+        if (UIManager.Instance != null && UIManager.Instance.ShowEndScreen(Score))
+        {
+            return;
+        }
+
+        // Load end screen when present; otherwise return to main menu to avoid flow breaks.
+        if (CanLoadScene(EndScreenSceneName))
+        {
+            SceneManager.LoadScene(EndScreenSceneName);
+            return;
+        }
+
+        Debug.LogWarning("[TapRush] EndScreen scene is not in Build Settings. Returning to MainMenu.");
+        SceneManager.LoadScene(MainMenuSceneName);
     }
 
-    private void ResetCombo()
+    private static bool CanLoadScene(string sceneName)
+    {
+        return Application.CanStreamedLevelBeLoaded(sceneName);
+    }
+
+    private void ResetCombo(string reason)
     {
         if (ComboCount == 0)
         {
             return;
         }
 
+        Debug.Log($"[TapRush] Combo reset ({reason}): ComboCount {ComboCount} -> 0");
+
         ComboCount = 0;
         UIManager.Instance?.UpdateCombo(ComboCount);
-    }
-
-    private void CheckWrongTap()
-    {
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        Camera cam = Camera.main;
-        if (cam == null)
-        {
-            return;
-        }
-
-        Vector3 worldPoint = cam.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
-        Collider2D hit2D = Physics2D.OverlapPoint(worldPoint2D);
-
-        if (hit2D != null && hit2D.GetComponent<Target>() != null)
-        {
-            return;
-        }
-
-        RegisterWrongTap();
     }
 }

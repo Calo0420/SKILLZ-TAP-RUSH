@@ -6,6 +6,7 @@ public class TargetSpawner : MonoBehaviour
 
     [SerializeField] private GameObject targetPrefab;
     [SerializeField] private float spawnInterval = 1.0f;
+    [SerializeField] private bool singleActiveTarget = true;
 
     // Spawn bounds (match your camera/canvas size — adjust as needed)
     [SerializeField] private float xMin = -4f, xMax = 4f;
@@ -34,6 +35,12 @@ public class TargetSpawner : MonoBehaviour
     void Update()
     {
         if (!spawning || !GameManager.Instance.IsGameActive) return;
+
+        if (singleActiveTarget && FindAnyObjectByType<Target>() != null)
+        {
+            return;
+        }
+
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f)
         {

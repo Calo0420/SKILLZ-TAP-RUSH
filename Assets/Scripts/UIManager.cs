@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -8,6 +11,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI comboText;
+    [SerializeField] private float comboMilestoneDisplaySeconds = 0.65f;
+    [SerializeField] private float comboShakeDuration = 0.16f;
+    [SerializeField] private float comboShakeMagnitude = 0.08f;
+
+    private GameObject runtimeEndScreenRoot;
+    private TextMeshProUGUI runtimeFinalScoreText;
+    private Coroutine comboMilestoneRoutine;
+    private Coroutine cameraShakeRoutine;
 
     void Awake()
     {
@@ -46,5 +57,155 @@ public class UIManager : MonoBehaviour
         {
             comboText.text = "Combo x" + combo;
         }
+    }
+
+    public void ShowComboMilestone(int comboCount)
+    {
+        if (comboText == null)
+        {
+            return;
+        }
+
+        if (comboMilestoneRoutine != null)
+        {
+            StopCoroutine(comboMilestoneRoutine);
+        }
+
+        comboMilestoneRoutine = StartCoroutine(ShowComboMilestoneRoutine(comboCount));
+    }
+
+    public bool ShowEndScreen(int finalScore)
+    {
+        EnsureRuntimeEndScreen();
+        if (runtimeEndScreenRoot == null || runtimeFinalScoreText == null)
+        {
+            return false;
+        }
+
+        runtimeFinalScoreText.text = "Final Score: " + finalScore;
+        runtimeEndScreenRoot.SetActive(true);
+        return true;
+    }
+
+    private void EnsureRuntimeEndScreen()
+    {
+        if (runtimeEndScreenRoot != null)
+        {
+            return;
+        }
+
+        GameObject canvasRoot = new GameObject("RuntimeEndScreenCanvas");
+        Canvas canvas = canvasRoot.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvasRoot.AddComponent<CanvasScaler>();
+        canvasRoot.AddComponent<GraphicRaycaster>();
+
+        runtimeEndScreenRoot = new GameObject("EndScreenPanel");
+        runtimeEndScreenRoot.transform.SetParent(canvasRoot.transform, false);
+        Image panelImage = runtimeEndScreenRoot.AddComponent<Image>();
+        panelImage.color = new Color(0f, 0f, 0f, 0.82f);
+
+        RectTransform panelRect = runtimeEndScreenRoot.GetComponent<RectTransform>();
+        panelRect.anchorMin = Vector2.zero;
+        panelRect.anchorMax = Vector2.one;
+        panelRect.offsetMin = Vector2.zero;
+        panelRect.offsetMax = Vector2.zero;
+
+        runtimeFinalScoreText = CreateLabel(runtimeEndScreenRoot.transform, "FinalScoreText", 54, new Vector2(0.5f, 0.66f));
+        runtimeFinalScoreText.text = "Final Score: 0";
+
+        Button playAgainButton = CreateButton(runtimeEndScreenRoot.transform, "PlayAgainButton", "Play Again", new Vector2(0.5f, 0.46f));
+        playAgainButton.onClick.AddListener(() => SceneManager.LoadScene("GameScene"));
+
+        Button menuButton = CreateButton(runtimeEndScreenRoot.transform, "MainMenuButton", "Main Menu", new Vector2(0.5f, 0.32f));
+        menuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
+
+        runtimeEndScreenRoot.SetActive(false);
+    }
+
+    private TextMeshProUGUI CreateLabel(Transform parent, string objectName, int fontSize, Vector2 anchor)
+    {
+        GameObject textObject = new GameObject(objectName);
+        textObject.transform.SetParent(parent, false);
+
+        RectTransform textRect = textObject.AddComponent<RectTransform>();
+        textRect.anchorMin = anchor;
+        textRect.anchorMax = anchor;
+        textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.sizeDelta = new Vector2(900f, 130f);
+
+        TextMeshProUGUI tmp = textObject.AddComponent<TextMeshProUGUI>();
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontSize = fontSize;
+        tmp.color = Color.white;
+        return tmp;
+    }
+
+    private IEnumerator ShowComboMilestoneRoutine(int comboCount)
+    {
+        comboText.color = new Color(1f, 0.92f, 0.35f, 1f);
+        comboText.text = "COMBO x" + comboCount + "!";
+
+        if (cameraShakeRoutine != null)
+        {
+            StopCoroutine(cameraShakeRoutine);
+        }
+
+        cameraShakeRoutine = StartCoroutine(PlayComboCameraShake());
+        yield return new WaitForSeconds(comboMilestoneDisplaySeconds);
+
+        comboText.color = Color.white;
+        UpdateCombo(GameManager.Instance != null ? GameManager.Instance.ComboCount : 0);
+        comboMilestoneRoutine = null;
+    }
+
+    private IEnumerator PlayComboCameraShake()
+    {
+        Camera cam = Camera.main;
+        if (cam == null)
+        {
+            cameraShakeRoutine = null;
+            yield break;
+        }
+
+        Transform camTransform = cam.transform;
+        Vector3 originalPosition = camTransform.position;
+        float elapsed = 0f;
+
+        while (elapsed < comboShakeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float fade = 1f - Mathf.Clamp01(elapsed / comboShakeDuration);
+            float x = Random.Range(-1f, 1f) * comboShakeMagnitude * fade;
+            float y = Random.Range(-1f, 1f) * comboShakeMagnitude * fade;
+            camTransform.position = new Vector3(originalPosition.x + x, originalPosition.y + y, originalPosition.z);
+            yield return null;
+        }
+
+        camTransform.position = originalPosition;
+        cameraShakeRoutine = null;
+    }
+
+    private Button CreateButton(Transform parent, string objectName, string label, Vector2 anchor)
+    {
+        GameObject buttonObject = new GameObject(objectName);
+        buttonObject.transform.SetParent(parent, false);
+
+        RectTransform buttonRect = buttonObject.AddComponent<RectTransform>();
+        buttonRect.anchorMin = anchor;
+        buttonRect.anchorMax = anchor;
+        buttonRect.pivot = new Vector2(0.5f, 0.5f);
+        buttonRect.sizeDelta = new Vector2(340f, 95f);
+
+        Image buttonImage = buttonObject.AddComponent<Image>();
+        buttonImage.color = new Color(0.12f, 0.25f, 0.45f, 1f);
+
+        Button button = buttonObject.AddComponent<Button>();
+
+        TextMeshProUGUI labelText = CreateLabel(buttonObject.transform, "Label", 36, new Vector2(0.5f, 0.5f));
+        labelText.text = label;
+        labelText.raycastTarget = false;
+
+        return button;
     }
 }
