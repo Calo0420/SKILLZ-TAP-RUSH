@@ -101,12 +101,15 @@ public void SetChaosMusicState(bool enabled)
         AudioClip targetClip = enabled ? chaosMusicClip : gameplayMusicClip;
         if (targetClip != null)
         {
-            if (musicSource.clip != targetClip)
+            bool clipChanged = musicSource.clip != targetClip;
+            if (clipChanged)
             {
                 musicSource.clip = targetClip;
             }
 
-            if (!musicSource.isPlaying)
+            // Always play when clip changed (assigning clip stops playback)
+            // or when source isn't playing yet (first call on game start).
+            if (clipChanged || !musicSource.isPlaying)
             {
                 musicSource.Play();
             }

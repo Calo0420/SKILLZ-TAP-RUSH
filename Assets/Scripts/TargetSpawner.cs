@@ -6,7 +6,7 @@ public class TargetSpawner : MonoBehaviour
 
     [SerializeField] private GameObject targetPrefab;
     [SerializeField] private float spawnInterval = 1.0f;
-    [SerializeField] private bool singleActiveTarget = true;
+    [SerializeField] private bool singleActiveTarget = false;
 
     [Header("Decoy Settings")]
     [SerializeField] private float decoySpawnChance = 0.3f;
@@ -60,8 +60,8 @@ public class TargetSpawner : MonoBehaviour
 public void StartSpawning()
     {
         spawning = true;
-        spawnInterval = 0.75f;
-        spawnTimer = spawnInterval;
+        spawnInterval = 0.45f;
+        spawnTimer = 0f; // spawn immediately on start
         currentTarget = null;
         milestoneCount = 0;
         gaugeTimer = gaugeSpawnInterval;

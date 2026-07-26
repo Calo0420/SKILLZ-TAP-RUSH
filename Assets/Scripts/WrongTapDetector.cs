@@ -25,10 +25,9 @@ public class WrongTapDetector : MonoBehaviour
             return;
         }
 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
+        // NOTE: IsPointerOverGameObject check removed — no interactive buttons
+        // exist during gameplay, and HUD text had raycastTarget disabled.
+        // This prevents dead zones where taps were silently swallowed.
 
         Camera cam = Camera.main;
         if (cam == null)
@@ -63,8 +62,8 @@ private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
         Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
-        // Tap forgiveness radius improves reliability for fast/small targets on mobile.
-        const float tapRadius = 0.42f;
+        // Tap forgiveness radius — match collider precisely for skill-based accuracy.
+        const float tapRadius = 0.01f;
         Collider2D[] hits2D = Physics2D.OverlapCircleAll(worldPoint2D, tapRadius);
         for (int i = 0; i < hits2D.Length; i++)
         {

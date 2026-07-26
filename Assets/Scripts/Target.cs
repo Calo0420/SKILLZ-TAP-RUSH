@@ -145,7 +145,8 @@ private System.Collections.IEnumerator ShrinkOverLifetime()
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01((elapsed / lifetime) * shrinkRateMultiplier);
             // Ease-in shrink: starts slow, accelerates toward end
-            float scale = Mathf.Lerp(1f, 0.25f, t * t);
+            // Floor at 45% so targets remain fairly tappable at end of life
+            float scale = Mathf.Lerp(1f, 0.45f, t * t);
             transform.localScale = originalScale * scale;
             yield return null;
         }
