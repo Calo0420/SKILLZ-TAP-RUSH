@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -58,16 +58,24 @@ public class WrongTapDetector : MonoBehaviour
         GameManager.Instance.RegisterWrongTap();
     }
 
-    private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
+private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
     {
         Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
-        Collider2D[] hits2D = Physics2D.OverlapPointAll(worldPoint2D);
+        // Tap forgiveness radius improves reliability for fast/small targets on mobile.
+        const float tapRadius = 0.42f;
+        Collider2D[] hits2D = Physics2D.OverlapCircleAll(worldPoint2D, tapRadius);
         for (int i = 0; i < hits2D.Length; i++)
         {
             Target target = hits2D[i].GetComponentInParent<Target>();
             if (target != null && target.TryTap())
+            {
+                return true;
+            }
+
+            GaugeTarget gauge = hits2D[i].GetComponentInParent<GaugeTarget>();
+            if (gauge != null && gauge.RegisterTap())
             {
                 return true;
             }
@@ -79,6 +87,12 @@ public class WrongTapDetector : MonoBehaviour
         {
             Target target = hits3D[i].collider.GetComponentInParent<Target>();
             if (target != null && target.TryTap())
+            {
+                return true;
+            }
+
+            GaugeTarget gauge = hits3D[i].collider.GetComponentInParent<GaugeTarget>();
+            if (gauge != null && gauge.RegisterTap())
             {
                 return true;
             }

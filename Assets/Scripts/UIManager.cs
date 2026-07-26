@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -18,6 +18,14 @@ public class UIManager : MonoBehaviour
     private GameObject runtimeEndScreenRoot;
     private TextMeshProUGUI runtimeFinalScoreText;
     private Coroutine comboMilestoneRoutine;
+    private TextMeshProUGUI gaugeProgressText;
+    private TextMeshProUGUI powerUpText;
+    private Coroutine powerUpDisplayRoutine;
+    private TextMeshProUGUI chaosAnnouncementText;
+    private UnityEngine.UI.Image chaosFlashImage;
+    private Coroutine chaosAnnouncementRoutine;
+
+
     private Coroutine cameraShakeRoutine;
 
     void Awake()
@@ -86,6 +94,177 @@ public class UIManager : MonoBehaviour
         runtimeEndScreenRoot.SetActive(true);
         return true;
     }
+
+public void ShowGaugeProgress(int current, int required)
+    {
+        EnsureGaugeProgressText();
+        if (gaugeProgressText != null)
+        {
+            gaugeProgressText.text = $"CHARGE! {current}/{required}";
+            gaugeProgressText.color = Color.Lerp(new Color(0.2f, 0.8f, 1f), Color.white, (float)current / required);
+        }
+    }
+
+    public void HideGaugeProgress()
+    {
+        if (gaugeProgressText != null)
+            gaugeProgressText.text = string.Empty;
+    }
+
+    public void ShowPowerUpActive(float duration)
+    {
+        HideGaugeProgress();
+        EnsurePowerUpText();
+        if (powerUpDisplayRoutine != null) StopCoroutine(powerUpDisplayRoutine);
+        powerUpDisplayRoutine = StartCoroutine(PowerUpDisplayRoutine(duration));
+    }
+
+public void ShowChaosAnnouncement()
+    {
+        if (chaosAnnouncementRoutine != null)
+        {
+            StopCoroutine(chaosAnnouncementRoutine);
+        }
+
+        EnsureChaosAnnouncementVisuals();
+        chaosAnnouncementRoutine = StartCoroutine(ShowChaosAnnouncementRoutine());
+    }
+
+    private IEnumerator ShowChaosAnnouncementRoutine()
+    {
+        if (chaosFlashImage != null)
+        {
+            chaosFlashImage.gameObject.SetActive(true);
+            Color flashColor = new Color(1f, 1f, 1f, 0.8f);
+            chaosFlashImage.color = flashColor;
+        }
+
+        if (chaosAnnouncementText != null)
+        {
+            chaosAnnouncementText.text = "OH GOD, HERE WE GO!";
+            chaosAnnouncementText.gameObject.SetActive(true);
+            chaosAnnouncementText.color = new Color(1f, 0.2f, 0.2f, 1f);
+            chaosAnnouncementText.outlineColor = Color.black;
+            chaosAnnouncementText.outlineWidth = 0.3f;
+            chaosAnnouncementText.fontSize = 92f;
+        }
+
+        float flashTime = 0.2f;
+        float elapsed = 0f;
+        while (elapsed < flashTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            if (chaosFlashImage != null)
+            {
+                float a = Mathf.Lerp(0.8f, 0f, elapsed / flashTime);
+                Color c = chaosFlashImage.color;
+                c.a = a;
+                chaosFlashImage.color = c;
+            }
+            yield return null;
+        }
+
+        if (chaosFlashImage != null)
+        {
+            chaosFlashImage.gameObject.SetActive(false);
+        }
+
+        float textTime = 1.25f;
+        elapsed = 0f;
+        while (elapsed < textTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            if (chaosAnnouncementText != null)
+            {
+                float pulse = 1f + Mathf.Sin(elapsed * 18f) * 0.08f;
+                chaosAnnouncementText.transform.localScale = new Vector3(pulse, pulse, 1f);
+            }
+            yield return null;
+        }
+
+        if (chaosAnnouncementText != null)
+        {
+            chaosAnnouncementText.text = string.Empty;
+            chaosAnnouncementText.transform.localScale = Vector3.one;
+        }
+
+        chaosAnnouncementRoutine = null;
+    }
+
+    private void EnsureChaosAnnouncementVisuals()
+    {
+        Canvas canvas = FindOrCreateHUDCanvas();
+
+        if (chaosFlashImage == null)
+        {
+            GameObject flashObject = new GameObject("ChaosFlash");
+            flashObject.transform.SetParent(canvas.transform, false);
+            chaosFlashImage = flashObject.AddComponent<UnityEngine.UI.Image>();
+            RectTransform flashRect = flashObject.GetComponent<RectTransform>();
+            flashRect.anchorMin = Vector2.zero;
+            flashRect.anchorMax = Vector2.one;
+            flashRect.offsetMin = Vector2.zero;
+            flashRect.offsetMax = Vector2.zero;
+            chaosFlashImage.color = new Color(1f, 1f, 1f, 0f);
+            chaosFlashImage.gameObject.SetActive(false);
+        }
+
+        if (chaosAnnouncementText == null)
+        {
+            chaosAnnouncementText = CreateLabel(canvas.transform, "ChaosAnnouncementText", 92, new Vector2(0.5f, 0.55f));
+            chaosAnnouncementText.text = string.Empty;
+            chaosAnnouncementText.fontStyle = FontStyles.Bold;
+            chaosAnnouncementText.alignment = TextAlignmentOptions.Center;
+        }
+    }
+
+
+    private System.Collections.IEnumerator PowerUpDisplayRoutine(float duration)
+    {
+        float remaining = duration;
+        while (remaining > 0f)
+        {
+            remaining -= Time.deltaTime;
+            if (powerUpText != null)
+            {
+                powerUpText.text = $"2x POWER! {remaining:F1}s";
+                powerUpText.color = Color.Lerp(Color.red, Color.yellow, remaining / duration);
+            }
+            yield return null;
+        }
+        if (powerUpText != null) powerUpText.text = string.Empty;
+        powerUpDisplayRoutine = null;
+    }
+
+    private void EnsureGaugeProgressText()
+    {
+        if (gaugeProgressText != null) return;
+        gaugeProgressText = CreateLabel(transform, "GaugeProgressText", 42, new Vector2(0.5f, 0.15f));
+        gaugeProgressText.text = string.Empty;
+        gaugeProgressText.transform.SetParent(FindOrCreateHUDCanvas().transform, false);
+    }
+
+    private void EnsurePowerUpText()
+    {
+        if (powerUpText != null) return;
+        powerUpText = CreateLabel(transform, "PowerUpText", 46, new Vector2(0.5f, 0.22f));
+        powerUpText.text = string.Empty;
+        powerUpText.transform.SetParent(FindOrCreateHUDCanvas().transform, false);
+    }
+
+    private Canvas hudCanvas;
+    private Canvas FindOrCreateHUDCanvas()
+    {
+        if (hudCanvas != null) return hudCanvas;
+        GameObject go = new GameObject("HUDCanvas");
+        hudCanvas = go.AddComponent<Canvas>();
+        hudCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        hudCanvas.sortingOrder = 10;
+        go.AddComponent<UnityEngine.UI.CanvasScaler>();
+        go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+        return hudCanvas;
+    }
+
 
     private void EnsureRuntimeEndScreen()
     {

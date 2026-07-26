@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -15,7 +15,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool debugComboMilestones = false;
     [SerializeField] private bool debugComboResets = false;
 
-    public int Score { get; private set; }
+    public float ScoreMultiplier { get; private set; } = 1f;
+    private Coroutine powerUpRoutine;
+
+    
+public int Score { get; private set; }
     public int ComboCount { get; private set; }
     public bool IsGameActive { get; private set; }
 
@@ -30,55 +34,89 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
-    public void StartGame()
+public void StartGame()
     {
         Score = 0;
         ComboCount = 0;
         IsGameActive = true;
+        ScoreMultiplier = 1f;
+
+        AudioManager.Instance?.SetChaosMusicState(false);
 
         UIManager.Instance?.UpdateScore(Score);
         UIManager.Instance?.UpdateCombo(ComboCount);
     }
 
-    public void RegisterHit(float speedScore01)
+public void RegisterHit(float speedScore01, float sizeBonus01 = 0f)
     {
-        if (!IsGameActive)
-        {
-            return;
-        }
+        if (!IsGameActive) return;
 
         ComboCount++;
         Debug.Log($"[TapRush] RegisterHit: ComboCount={ComboCount}");
 
         float comboMultiplier = 1f;
-        if (ComboCount >= 10)
-        {
-            comboMultiplier = 1.5f;
-        }
-        else if (ComboCount >= 5)
-        {
-            comboMultiplier = 1.2f;
-        }
+        if (ComboCount >= 10) comboMultiplier = 1.5f;
+        else if (ComboCount >= 5) comboMultiplier = 1.2f;
 
         int speedBonus = Mathf.RoundToInt(Mathf.Clamp01(speedScore01) * maxSpeedBonus);
-        int points = Mathf.RoundToInt((baseTapPoints + speedBonus) * comboMultiplier);
+        int sizeBonus  = Mathf.RoundToInt(Mathf.Clamp01(sizeBonus01)  * maxSpeedBonus);
+        int points = Mathf.RoundToInt((baseTapPoints + speedBonus + sizeBonus) * comboMultiplier * ScoreMultiplier);
 
         Score += points;
         UIManager.Instance?.UpdateScore(Score);
         UIManager.Instance?.UpdateCombo(ComboCount);
-
         AudioManager.Instance?.PlayCorrectTap();
+
         if (ComboCount > 0 && ComboCount % 5 == 0)
         {
             if (debugComboMilestones)
-            {
                 Debug.Log("[TapRush] Combo milestone reached at streak x" + ComboCount);
-            }
 
             AudioManager.Instance?.PlayComboMilestone();
             UIManager.Instance?.ShowComboMilestone(ComboCount);
+            TargetSpawner.Instance?.OnComboMilestone(ComboCount);
         }
     }
+
+public void RegisterBonusHit(float speedScore01)
+    {
+        if (!IsGameActive) return;
+
+        ComboCount++;
+        int points = Mathf.RoundToInt(((baseTapPoints * 3f) + Mathf.Clamp01(speedScore01) * maxSpeedBonus) * ScoreMultiplier);
+        Score += points;
+        UIManager.Instance?.UpdateScore(Score);
+        UIManager.Instance?.UpdateCombo(ComboCount);
+        AudioManager.Instance?.PlayBonusHit();
+
+        if (ComboCount > 0 && ComboCount % 5 == 0)
+        {
+            AudioManager.Instance?.PlayComboMilestone();
+            UIManager.Instance?.ShowComboMilestone(ComboCount);
+            TargetSpawner.Instance?.OnComboMilestone(ComboCount);
+        }
+
+        Debug.Log($"[TapRush] BONUS HIT! +{points} pts");
+    }
+
+public void ActivatePowerUp(float duration)
+    {
+        if (powerUpRoutine != null)
+            StopCoroutine(powerUpRoutine);
+        powerUpRoutine = StartCoroutine(PowerUpRoutine(duration));
+    }
+
+    private System.Collections.IEnumerator PowerUpRoutine(float duration)
+    {
+        ScoreMultiplier = 2f;
+        Debug.Log($"[TapRush] Power-up activated! 2x for {duration}s");
+        yield return new WaitForSeconds(duration);
+        ScoreMultiplier = 1f;
+        powerUpRoutine = null;
+        Debug.Log("[TapRush] Power-up ended.");
+    }
+
+
 
     public void RegisterMiss()
     {
@@ -118,10 +156,12 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance?.PlayWrongTap();
     }
 
-    public void EndGame()
+public void EndGame()
     {
+        Time.timeScale = 1f;
         IsGameActive = false;
         TargetSpawner.Instance?.StopSpawning();
+        AudioManager.Instance?.SetChaosMusicState(false);
 
         GameSessionData.LastScore = Score;
 
