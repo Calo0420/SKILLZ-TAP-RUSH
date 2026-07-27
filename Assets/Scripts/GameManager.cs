@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
 
     public float ScoreMultiplier { get; private set; } = 1f;
     private Coroutine powerUpRoutine;
+    private bool powerUpActive;
 
     
 public int Score { get; private set; }
@@ -40,6 +41,8 @@ public void StartGame()
         ComboCount = 0;
         IsGameActive = true;
         ScoreMultiplier = 1f;
+        powerUpActive = false;
+        powerUpRoutine = null;
 
         AudioManager.Instance?.SetChaosMusicState(false);
 
@@ -103,7 +106,25 @@ public void ActivatePowerUp(float duration)
     {
         if (powerUpRoutine != null)
             StopCoroutine(powerUpRoutine);
+        powerUpActive = true;
         powerUpRoutine = StartCoroutine(PowerUpRoutine(duration));
+    }
+
+    private void CancelPowerUp()
+    {
+        Debug.Log($"[TapRush] CancelPowerUp called. powerUpActive={powerUpActive}, ScoreMultiplier={ScoreMultiplier}");
+        if (powerUpActive)
+        {
+            if (powerUpRoutine != null)
+            {
+                StopCoroutine(powerUpRoutine);
+                powerUpRoutine = null;
+            }
+            powerUpActive = false;
+            ScoreMultiplier = 1f;
+            UIManager.Instance?.HidePowerUpDisplay();
+            Debug.Log("[TapRush] Power-up CANCELLED!");
+        }
     }
 
     private System.Collections.IEnumerator PowerUpRoutine(float duration)
@@ -112,6 +133,7 @@ public void ActivatePowerUp(float duration)
         Debug.Log($"[TapRush] Power-up activated! 2x for {duration}s");
         yield return new WaitForSeconds(duration);
         ScoreMultiplier = 1f;
+        powerUpActive = false;
         powerUpRoutine = null;
         Debug.Log("[TapRush] Power-up ended.");
     }
@@ -125,12 +147,10 @@ public void ActivatePowerUp(float duration)
             return;
         }
 
-        if (debugComboResets && ComboCount > 1)
-        {
-            Debug.Log("[TapRush] Combo reset due to missed target at combo x" + ComboCount);
-        }
-
-        ResetCombo("missed target");
+        // In multi-target mode, missed targets do NOT break combo or cancel power-up.
+        // Only wrong taps (red balls / empty space) should penalize the player.
+        // Just log it for analytics.
+        Debug.Log("[TapRush] Target expired (no penalty in multi-target mode).");
     }
 
     public void RegisterWrongTap()
@@ -146,14 +166,7 @@ public void ActivatePowerUp(float duration)
             Score = 0;
         }
 
-        // Cancel gauge power-up instantly as penalty
-        if (powerUpRoutine != null)
-        {
-            StopCoroutine(powerUpRoutine);
-            powerUpRoutine = null;
-            ScoreMultiplier = 1f;
-            Debug.Log("[TapRush] Power-up CANCELLED due to wrong tap!");
-        }
+        CancelPowerUp();
 
         if (debugComboResets && ComboCount > 1)
         {
@@ -206,5 +219,8 @@ public void EndGame()
 
         ComboCount = 0;
         UIManager.Instance?.UpdateCombo(ComboCount);
+
+        // Reset spawn speed-ups earned from combo milestones
+        TargetSpawner.Instance?.ResetComboSpeed();
     }
 }

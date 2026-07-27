@@ -7,6 +7,12 @@ public class GameSceneBootstrap : MonoBehaviour
         SetupVisualEnvironment();
         EnsureWrongTapDetector();
 
+        // Small delay to ensure all Awake/Start calls finish on GameManager, TimerManager, etc.
+        Invoke(nameof(BeginGame), 0.1f);
+    }
+
+    private void BeginGame()
+    {
         GameManager.Instance?.StartGame();
         TimerManager.Instance?.StartTimer();
         TargetSpawner.Instance?.StartSpawning();

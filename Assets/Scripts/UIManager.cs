@@ -119,6 +119,16 @@ public void ShowGaugeProgress(int current, int required)
         powerUpDisplayRoutine = StartCoroutine(PowerUpDisplayRoutine(duration));
     }
 
+    public void HidePowerUpDisplay()
+    {
+        if (powerUpDisplayRoutine != null)
+        {
+            StopCoroutine(powerUpDisplayRoutine);
+            powerUpDisplayRoutine = null;
+        }
+        if (powerUpText != null) powerUpText.text = string.Empty;
+    }
+
 public void ShowChaosAnnouncement()
     {
         if (chaosAnnouncementRoutine != null)

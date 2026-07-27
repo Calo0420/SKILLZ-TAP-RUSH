@@ -26,10 +26,10 @@ public class TargetSpawner : MonoBehaviour
     [SerializeField] private float chaosGoldChanceMultiplier = 1.8f;
     [SerializeField] private float chaosShrinkMultiplier = 1.9f;
     [SerializeField] private float chaosMinSpawnInterval = 0.18f;
-    [SerializeField] private float chaosRedSpawnChance = 0.92f;
-    [SerializeField] private int chaosMinRedPerWave = 4;
-    [SerializeField] private int chaosMaxRedPerWave = 7;
-    [SerializeField] private float chaosWhiteSpawnChance = 0.32f;
+    [SerializeField] private float chaosRedSpawnChance = 0.55f;
+    [SerializeField] private int chaosMinRedPerWave = 2;
+    [SerializeField] private int chaosMaxRedPerWave = 4;
+    [SerializeField] private float chaosWhiteSpawnChance = 0.75f;
 
 
     private bool chaosModeActive;
@@ -114,6 +114,16 @@ public void OnComboMilestone(int comboCount)
         Debug.Log($"[TapRush] Speed up! Combo x{comboCount}, milestone #{milestoneCount} -> interval={spawnInterval:F2}s");
     }
 
+    public void ResetComboSpeed()
+    {
+        if (milestoneCount > 0)
+        {
+            spawnInterval = 0.30f;
+            milestoneCount = 0;
+            Debug.Log("[TapRush] Spawn speed reset to base (combo broken)");
+        }
+    }
+
 public void EnterChaosMode()
     {
         if (chaosModeActive)
@@ -130,7 +140,7 @@ public void EnterChaosMode()
         bonusSpawnChance = Mathf.Clamp01(baseBonusSpawnChance * chaosGoldChanceMultiplier);
 
         // Disable prep mechanics during final survival section.
-        GaugeTarget[] gauges = FindObjectsByType<GaugeTarget>(FindObjectsSortMode.None);
+        GaugeTarget[] gauges = FindObjectsByType<GaugeTarget>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         for (int i = 0; i < gauges.Length; i++)
         {
             Destroy(gauges[i].gameObject);
@@ -195,7 +205,10 @@ private void SpawnTarget()
             return;
         }
 
-        SpawnOne(false, false);
+        // Spawn 2-3 normal targets per tick to keep the screen active
+        int normalCount = Random.Range(2, 4);
+        for (int i = 0; i < normalCount; i++)
+            SpawnOne(false, false);
 
         if (Random.value < bonusSpawnChance)
             SpawnOne(false, true);
