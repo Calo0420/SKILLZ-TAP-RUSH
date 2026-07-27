@@ -32,10 +32,7 @@ public void SetAsBonus()
     {
         isBonus = true;
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.color = new Color(1f, 0.85f, 0f, 1f); // gold
-        }
+        if (sr != null) sr.color = new Color(1f, 0.85f, 0f, 1f);
         transform.localScale *= 0.6f;
         lifetime *= 0.6f;
     }
@@ -62,11 +59,7 @@ public void SetAsDecoy()
     {
         isDecoy = true;
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.color = new Color(0.95f, 0.15f, 0.15f, 1f);
-        }
-        // Slightly smaller so it reads as different at a glance
+        if (sr != null) sr.color = new Color(0.95f, 0.15f, 0.15f, 1f);
         transform.localScale *= 0.8f;
     }
 
@@ -76,9 +69,14 @@ void Start()
         spawnTime = Time.time;
         Invoke(nameof(Miss), lifetime);
 
+        // Add neon glow + particle burst visuals
+        NeonTargetFX nfx = gameObject.AddComponent<NeonTargetFX>();
+        if (isDecoy) nfx.SetType(NeonTargetFX.FXType.Decoy);
+        else if (isBonus) nfx.SetType(NeonTargetFX.FXType.Bonus);
+        else nfx.SetType(NeonTargetFX.FXType.Normal);
+
         if (!isDecoy && !isBonus)
         {
-            // Shrink toward zero over the lifetime to create visual urgency
             StartCoroutine(ShrinkOverLifetime());
         }
     }
@@ -112,12 +110,15 @@ public bool TryTap()
         else
         {
             float elapsed = Time.time - spawnTime;
-            // Smaller targets reward more — scale bonus by how small we are vs original
             float sizeBonus01 = originalScale == Vector3.zero ? 0f :
                 Mathf.Clamp01(1f - (transform.localScale.x / originalScale.x));
             float speedScore01 = 1f - Mathf.Clamp01(elapsed / lifetime);
             GameManager.Instance?.RegisterHit(speedScore01, sizeBonus01);
         }
+
+        // Play particle burst before destroying
+        NeonTargetFX nfx = GetComponent<NeonTargetFX>();
+        if (nfx != null) nfx.PlayBurst();
 
         Destroy(gameObject);
         return true;

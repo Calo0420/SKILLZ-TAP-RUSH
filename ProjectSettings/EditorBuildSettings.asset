@@ -13,7 +13,10 @@ EditorBuildSettings:
     guid: 58c71ab598ac50f41bf893dc0c7bec0a
   - enabled: 1
     path: Assets/Scenes/EndScreen.unity
-    guid: 00000000000000000000000000000000
+    guid: d48c77ee37c88da4a85996e7c57e688c
   m_configObjects:
+    com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: 92c1322a7fa4e9946814c24d79f4a970, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: b15e492686a9b8a4a8ffd8b255a8b433, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: f81b070d3bc46fd4da051fb53b350858, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

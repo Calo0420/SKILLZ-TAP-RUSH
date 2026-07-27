@@ -4,6 +4,7 @@ public class GameSceneBootstrap : MonoBehaviour
 {
     void Start()
     {
+        SetupVisualEnvironment();
         EnsureWrongTapDetector();
 
         GameManager.Instance?.StartGame();
@@ -11,13 +12,20 @@ public class GameSceneBootstrap : MonoBehaviour
         TargetSpawner.Instance?.StartSpawning();
     }
 
+    private void SetupVisualEnvironment()
+    {
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.02f, 0.02f, 0.06f, 1f);
+        }
+    }
+
     private void EnsureWrongTapDetector()
     {
         WrongTapDetector existingDetector = FindAnyObjectByType<WrongTapDetector>();
-        if (existingDetector != null)
-        {
-            return;
-        }
+        if (existingDetector != null) return;
 
         GameObject detectorRoot = new GameObject("WrongTapDetector");
         detectorRoot.AddComponent<WrongTapDetector>();

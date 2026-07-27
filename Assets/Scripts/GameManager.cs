@@ -146,6 +146,15 @@ public void ActivatePowerUp(float duration)
             Score = 0;
         }
 
+        // Cancel gauge power-up instantly as penalty
+        if (powerUpRoutine != null)
+        {
+            StopCoroutine(powerUpRoutine);
+            powerUpRoutine = null;
+            ScoreMultiplier = 1f;
+            Debug.Log("[TapRush] Power-up CANCELLED due to wrong tap!");
+        }
+
         if (debugComboResets && ComboCount > 1)
         {
             Debug.Log("[TapRush] Combo reset due to wrong tap at combo x" + ComboCount);

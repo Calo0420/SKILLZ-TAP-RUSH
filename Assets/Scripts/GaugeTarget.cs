@@ -16,7 +16,11 @@ public class GaugeTarget : MonoBehaviour
     {
         sr = GetComponent<SpriteRenderer>();
         if (sr != null)
-            sr.color = new Color(0.2f, 0.8f, 1f, 1f); // cyan
+            sr.color = new Color(0.2f, 0.8f, 1f, 1f);
+
+        // Add neon glow
+        NeonTargetFX nfx = gameObject.AddComponent<NeonTargetFX>();
+        nfx.SetType(NeonTargetFX.FXType.Gauge);
 
         baseScale = transform.localScale * 1.5f;
         transform.localScale = baseScale;

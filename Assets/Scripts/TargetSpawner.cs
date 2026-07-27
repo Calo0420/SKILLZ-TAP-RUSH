@@ -5,7 +5,7 @@ public class TargetSpawner : MonoBehaviour
     public static TargetSpawner Instance { get; private set; }
 
     [SerializeField] private GameObject targetPrefab;
-    [SerializeField] private float spawnInterval = 1.0f;
+    [SerializeField] private float spawnInterval = 0.30f;
     [SerializeField] private bool singleActiveTarget = false;
 
     [Header("Decoy Settings")]
@@ -41,9 +41,10 @@ public class TargetSpawner : MonoBehaviour
 
 
 
-    // Spawn bounds (match your camera/canvas size — adjust as needed)
-    [SerializeField] private float xMin = -4f, xMax = 4f;
-    [SerializeField] private float yMin = -3f, yMax = 3f;
+    // Spawn bounds — computed from camera at startup, with margin so targets stay on screen
+    private float xMin, xMax;
+    private float yMin, yMax;
+    [SerializeField] private float spawnMargin = 0.6f;
 
     private float spawnTimer;
     private int milestoneCount;
@@ -60,14 +61,44 @@ public class TargetSpawner : MonoBehaviour
 public void StartSpawning()
     {
         spawning = true;
-        spawnInterval = 0.45f;
-        spawnTimer = 0f; // spawn immediately on start
+        spawnInterval = 0.30f;
+        spawnTimer = 0f;
         currentTarget = null;
         milestoneCount = 0;
         gaugeTimer = gaugeSpawnInterval;
 
         chaosModeActive = false;
         baseBonusSpawnChance = bonusSpawnChance;
+
+        ComputeSpawnBounds();
+        SpawnInitialBurst();
+    }
+
+    private void ComputeSpawnBounds()
+    {
+        Camera cam = Camera.main;
+        if (cam != null && cam.orthographic)
+        {
+            float h = cam.orthographicSize - spawnMargin;
+            float w = h * cam.aspect;
+            xMin = -w;
+            xMax = w;
+            yMin = -h;
+            yMax = h;
+        }
+        else
+        {
+            xMin = -8f; xMax = 8f;
+            yMin = -4f; yMax = 4f;
+        }
+    }
+
+    private void SpawnInitialBurst()
+    {
+        for (int i = 0; i < 10; i++)
+            SpawnOne(false, false);
+        for (int i = 0; i < 3; i++)
+            SpawnOne(true, false);
     }
 
     public void StopSpawning()
