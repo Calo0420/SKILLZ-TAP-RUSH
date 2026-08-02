@@ -31,6 +31,13 @@ public class TargetSpawner : MonoBehaviour
     [SerializeField] private int chaosMaxRedPerWave = 4;
     [SerializeField] private float chaosWhiteSpawnChance = 0.75f;
 
+    [Header("Phase 4.5 Replay Test (temporary debug tools)")]
+    [Tooltip("Set to a non-zero value to force this exact match seed instead of a random one. Run the match once, note the logged spawn sequence, reset play, run again with the SAME value here — the logs should be byte-identical. Set back to 0 for normal play.")]
+    [SerializeField] private int debugForceSeed = 0;
+    [Tooltip("When on, logs every spawn's index/position/type to the Console so two runs can be diffed. Leave off for normal play, it's noisy.")]
+    [SerializeField] private bool debugLogSpawnSequence = false;
+    private int _debugSpawnIndex;
+
 
     private bool chaosModeActive;
     private float baseBonusSpawnChance;
@@ -89,7 +96,13 @@ public class TargetSpawner : MonoBehaviour
 
 public void StartSpawning()
     {
+        if (debugForceSeed != 0)
+        {
+            GameSessionData.ResetSeedForNewMatch();
+            GameSessionData.MatchSeed = debugForceSeed;
+        }
         _rng = new System.Random(GameSessionData.GetOrCreateMatchSeed());
+        _debugSpawnIndex = 0;
 
         spawning = true;
         spawnInterval = 0.30f;
@@ -258,6 +271,9 @@ private void SpawnOne(bool asDecoy, bool asBonus)
             0f
         );
 
+        float rolledSize = 0f;
+        Vector2 rolledDrift = Vector2.zero;
+
         GameObject spawned = Instantiate(targetPrefab, pos, Quaternion.identity);
         Target target = spawned.GetComponent<Target>();
         if (target == null) target = spawned.GetComponentInChildren<Target>();
@@ -271,7 +287,8 @@ private void SpawnOne(bool asDecoy, bool asBonus)
 
         if (asDecoy)
         {
-            target.SetSize(RngRange(targetMinScale, targetMaxScale));
+            rolledSize = RngRange(targetMinScale, targetMaxScale);
+            target.SetSize(rolledSize);
             target.SetAsDecoy();
         }
         else if (asBonus)
@@ -280,11 +297,19 @@ private void SpawnOne(bool asDecoy, bool asBonus)
         }
         else
         {
-            target.SetSize(RngRange(targetMinScale, targetMaxScale));
+            rolledSize = RngRange(targetMinScale, targetMaxScale);
+            target.SetSize(rolledSize);
             float driftMax = driftSpeedMax + milestoneCount * 0.1f;
-            Vector2 drift = RngInsideUnitCircle().normalized * RngRange(driftSpeedMin, driftMax);
-            target.SetDrift(drift);
+            rolledDrift = RngInsideUnitCircle().normalized * RngRange(driftSpeedMin, driftMax);
+            target.SetDrift(rolledDrift);
             currentTarget = target;
+        }
+
+        if (debugLogSpawnSequence)
+        {
+            _debugSpawnIndex++;
+            string kind = asDecoy ? "decoy" : asBonus ? "bonus" : "normal";
+            Debug.Log($"[TapRush][ReplayTest] #{_debugSpawnIndex} kind={kind} pos=({pos.x:F4},{pos.y:F4}) size={rolledSize:F4} drift=({rolledDrift.x:F4},{rolledDrift.y:F4})");
         }
     }
 
