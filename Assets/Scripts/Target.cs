@@ -37,10 +37,14 @@ public void SetAsBonus()
         lifetime *= 0.6f;
     }
 
-    public void SetRandomSize(float minScale, float maxScale)
+    /// <summary>
+    /// Sets this target's size directly. The randomness now lives in TargetSpawner via the
+    /// seeded/deterministic RNG (Phase 4.5), so the exact scale rolled is reproducible given
+    /// the same match seed — this method just applies whatever value it's handed.
+    /// </summary>
+    public void SetSize(float scale)
     {
-        float s = Random.Range(minScale, maxScale);
-        transform.localScale *= s;
+        transform.localScale *= scale;
     }
 
     public void SetDrift(Vector2 velocity)

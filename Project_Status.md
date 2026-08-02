@@ -1,6 +1,7 @@
 # TAP RUSH — Project Status
 
-> **Last Updated:** 2026-07-27  
+> **Last Updated:** 2026-08-02 (Clue — restored the Deterministic/Seeded RNG gate as Phase 4.5, retired TAP-RUSH-ROADMAP.md as a stub pointing here)
+> **THIS IS THE CANONICAL ROADMAP.** TAP-RUSH-ROADMAP.md is now a redirect stub — this file is the single source of truth going forward.
 > **Unity Version:** 6000+  
 > **Target Platform:** Mobile (iOS/Android) via Skillz  
 > **Repository:** Calo0420/SKILLZ-TAP-RUSH
@@ -111,6 +112,38 @@ Assets/
 | Flashing timer | ❌ TODO | |
 | Screen glow effect | ❌ TODO | |
 | Fire/particle effects | ❌ TODO | |
+
+### Phase 4.5: Deterministic/Seeded RNG 🔒 CRITICAL — ❌ NOT STARTED — HARD GATE
+
+> **This phase blocks Phase 5. Do not touch Skillz SDK integration until this is done.**
+> Carried forward from the original roadmap (TAP-RUSH-ROADMAP.md, now archived) because it
+> got dropped in the renumbering and almost got skipped. Confirmed 2026-08-02 by Clue: current
+> `TargetSpawner.cs` uses plain `UnityEngine.Random` (`Random.Range`, `Random.value`,
+> `Random.insideUnitCircle`) throughout — zero seeding, zero determinism. Same seed on two
+> devices currently does NOT produce the same spawn sequence.
+
+**Exit criteria:** Same seed = identical spawn sequence, verified across two different devices/runs.
+
+**Why this is CRITICAL, not just another checklist item:** Skillz is a real-money competitive
+platform. It needs to verify players in the same match faced an identical, reproducible sequence
+of targets. Without deterministic spawning, Skillz's fairness/anti-cheat verification fails and
+the SDK integration gets rejected — this isn't cosmetic, it's a submission blocker.
+
+**Required work:**
+1. Replace `UnityEngine.Random` calls that affect spawn position/timing/type in `TargetSpawner.cs`
+   (and anywhere else spawn-relevant) with a seeded `System.Random(seed)` instance.
+2. Pre-generate the full spawn sequence (positions, types, timing) as an array at match start from
+   that seed — do not generate spawns live/on-the-fly from the seeded RNG mid-match.
+3. Thread the seed through the match/session bootstrap (`GameSessionData.cs` or equivalent) so
+   it's set once per match and reproducible.
+4. Replay validation: log the full spawn sequence for a given seed, run it twice (ideally on two
+   different devices/builds), diff the logs — must be byte-identical.
+5. Set Active Input Handling to "Both" in Unity project settings if not already (locked decision,
+   see Fat Memory).
+
+**Mandatory checkpoint:** Once implemented, bring the diff to Clue for review BEFORE starting
+Phase 5 (Skillz SDK Integration). This review is non-negotiable — it was called out explicitly
+by Calo as Clue's actual job on this project.
 
 ### Phase 5: Skillz Integration 🏆 NOT STARTED
 - Leaderboards
@@ -226,7 +259,8 @@ Assets/
 7. Integrate object pooler for chaos mode
 8. Flashing timer during chaos
 9. Screen glow during chaos
-10. Skillz SDK integration
+10. **🔒 Deterministic/Seeded RNG (Phase 4.5) — HARD GATE, blocks everything below**
+11. Skillz SDK integration — **BLOCKED until #10 is done and reviewed by Clue**
 
 ---
 

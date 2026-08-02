@@ -1,50 +1,23 @@
-# TAP RUSH Project Roadmap
+# ⚠️ THIS IS A REDIRECT STUB — not the canonical roadmap anymore
 
-Lead: C/C/C
-Product Owner: Oscar Reyes (Calo0420)
-Target: 2-4 weeks to Skillz submission
+This file (`TAP-RUSH-ROADMAP.md`) is **deprecated as of 2026-08-02**.
 
-## PHASE 0 - Setup (Day 1)
-Exit: Empty Unity opens, SDK loads without errors.
+It described the original 6-phase plan, including the critical "Phase 3 - Deterministic/Seeded"
+RNG gate. That requirement is real and still applies — it just lives in the other document now.
 
-## PHASE 1 - Core Gameplay (Days 2-6)
-Exit: Tap targets 60s, see score change.
+**The canonical, actively-maintained roadmap is:**
 
-## PHASE 2 - Scoring & Feel (Days 7-9)
-Exit: Full match feels like a game.
+    /opt/SKILLZ-TAP-RUSH/Project_Status.md
 
-Status: COMPLETE (2026-07-22)
-Delivered:
-- Stable wrong-tap penalty and combo reset behavior
-- Combo milestones at x5/x10 with dedicated milestone sound
-- Combo popup feedback and camera shake
-- Runtime end screen fallback flow
-- Input-system compatible tap detection
+That file has the real, current phase status (it's been kept up to date with actual repo state)
+and now includes the deterministic RNG requirement as **Phase 4.5 — CRITICAL — hard gate before
+Skillz SDK integration**, carried forward from this document so it doesn't get lost again.
 
-## PHASE 3 - Deterministic/Seeded (Days 10-13) CRITICAL
-Exit: Same seed = identical spawns on every device.
+**Any AI instance (Copilot, Claude, etc.) reading this:** go read `Project_Status.md` instead.
+Do not use the phase numbering from this file — it no longer matches the real state of the project.
 
-Next Actions:
-- Deterministic RNG seed path for target spawns
-- Seed handoff through match/session bootstrap
-- Replay validation: same seed -> same spawn sequence
-
-## PHASE 4 - Skillz SDK Integration (Days 14-18)
-Exit: Full match through actual Skillz sandbox.
-
-## PHASE 5 - Polish Pass (Days 19-22)
-Exit: Looks intentional, not a prototype.
-
-## PHASE 6 - QA & Submission (Days 23-28)
-Exit: Submitted.
-
-Ground Rules:
-- No new features until Phase 6
-- Stuck > 1 day: escalate
-- Phase 3 is critical: Claude reviews
+Old ground rules from this doc, still valid and worth keeping in mind:
+- No new features until QA/submission phase
+- Stuck > 1 day on something: escalate
 - Rough > perfect
-
-Workspace:
-GitHub: git@github.com:Calo0420/SKILLZ-TAP-RUSH.git
-VPS: /opt/SKILLZ-TAP-RUSH/
-Local: C:\Users\osreyes\Documents\TapRush
+- The deterministic RNG phase requires Clue's review before proceeding — this is not optional

@@ -52,6 +52,35 @@ public class TargetSpawner : MonoBehaviour
     private bool spawning;
     private Target currentTarget;
 
+    // --- Deterministic/seeded RNG (Phase 4.5, hard gate before Skillz SDK integration) ---
+    // Every piece of randomness that decides WHAT/WHERE/WHEN a target spawns MUST go through
+    // this seeded generator, not UnityEngine.Random — that's what makes "same seed = identical
+    // spawn sequence" true. Purely cosmetic randomness elsewhere (e.g. NeonTargetFX's glow
+    // pulse phase offset) is fine left on UnityEngine.Random since it doesn't affect gameplay.
+    private System.Random _rng;
+
+    private float RngRange(float minInclusive, float maxInclusive)
+    {
+        return (float)(minInclusive + _rng.NextDouble() * (maxInclusive - minInclusive));
+    }
+
+    private int RngRange(int minInclusive, int maxExclusive)
+    {
+        return _rng.Next(minInclusive, maxExclusive);
+    }
+
+    private float RngValue()
+    {
+        return (float)_rng.NextDouble();
+    }
+
+    private Vector2 RngInsideUnitCircle()
+    {
+        double angle = _rng.NextDouble() * (System.Math.PI * 2.0);
+        double radius = System.Math.Sqrt(_rng.NextDouble());
+        return new Vector2((float)(System.Math.Cos(angle) * radius), (float)(System.Math.Sin(angle) * radius));
+    }
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -60,6 +89,8 @@ public class TargetSpawner : MonoBehaviour
 
 public void StartSpawning()
     {
+        _rng = new System.Random(GameSessionData.GetOrCreateMatchSeed());
+
         spawning = true;
         spawnInterval = 0.30f;
         spawnTimer = 0f;
@@ -183,21 +214,21 @@ private void SpawnTarget()
     {
         if (chaosModeActive)
         {
-            int redWaves = Random.Range(chaosMinRedPerWave, chaosMaxRedPerWave + 1);
+            int redWaves = RngRange(chaosMinRedPerWave, chaosMaxRedPerWave + 1);
             for (int i = 0; i < redWaves; i++)
             {
-                if (Random.value < chaosRedSpawnChance)
+                if (RngValue() < chaosRedSpawnChance)
                 {
                     SpawnOne(true, false);
                 }
             }
 
-            if (Random.value < chaosWhiteSpawnChance)
+            if (RngValue() < chaosWhiteSpawnChance)
             {
                 SpawnOne(false, false);
             }
 
-            if (Random.value < bonusSpawnChance)
+            if (RngValue() < bonusSpawnChance)
             {
                 SpawnOne(false, true);
             }
@@ -206,15 +237,15 @@ private void SpawnTarget()
         }
 
         // Spawn 2-3 normal targets per tick to keep the screen active
-        int normalCount = Random.Range(2, 4);
+        int normalCount = RngRange(2, 4);
         for (int i = 0; i < normalCount; i++)
             SpawnOne(false, false);
 
-        if (Random.value < bonusSpawnChance)
+        if (RngValue() < bonusSpawnChance)
             SpawnOne(false, true);
 
-        int decoyCount = Random.value < decoySpawnChance ? 1 : 0;
-        if (milestoneCount >= 4 && Random.value < 0.3f) decoyCount++;
+        int decoyCount = RngValue() < decoySpawnChance ? 1 : 0;
+        if (milestoneCount >= 4 && RngValue() < 0.3f) decoyCount++;
         for (int i = 0; i < decoyCount; i++)
             SpawnOne(true, false);
     }
@@ -222,8 +253,8 @@ private void SpawnTarget()
 private void SpawnOne(bool asDecoy, bool asBonus)
     {
         Vector3 pos = new Vector3(
-            Random.Range(xMin, xMax),
-            Random.Range(yMin, yMax),
+            RngRange(xMin, xMax),
+            RngRange(yMin, yMax),
             0f
         );
 
@@ -240,7 +271,7 @@ private void SpawnOne(bool asDecoy, bool asBonus)
 
         if (asDecoy)
         {
-            target.SetRandomSize(targetMinScale, targetMaxScale);
+            target.SetSize(RngRange(targetMinScale, targetMaxScale));
             target.SetAsDecoy();
         }
         else if (asBonus)
@@ -249,9 +280,9 @@ private void SpawnOne(bool asDecoy, bool asBonus)
         }
         else
         {
-            target.SetRandomSize(targetMinScale, targetMaxScale);
+            target.SetSize(RngRange(targetMinScale, targetMaxScale));
             float driftMax = driftSpeedMax + milestoneCount * 0.1f;
-            Vector2 drift = Random.insideUnitCircle.normalized * Random.Range(driftSpeedMin, driftMax);
+            Vector2 drift = RngInsideUnitCircle().normalized * RngRange(driftSpeedMin, driftMax);
             target.SetDrift(drift);
             currentTarget = target;
         }
@@ -260,8 +291,8 @@ private void SpawnOne(bool asDecoy, bool asBonus)
 private void SpawnGauge()
     {
         Vector3 pos = new Vector3(
-            Random.Range(xMin, xMax),
-            Random.Range(yMin, yMax),
+            RngRange(xMin, xMax),
+            RngRange(yMin, yMax),
             0f
         );
 

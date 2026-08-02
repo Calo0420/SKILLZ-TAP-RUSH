@@ -13,6 +13,10 @@ public class GameSceneBootstrap : MonoBehaviour
 
     private void BeginGame()
     {
+        // Phase 4.5: fresh deterministic seed per match (unless Skillz sets MatchSeed
+        // externally right after this reset — see GameSessionData for the wiring point).
+        GameSessionData.ResetSeedForNewMatch();
+
         GameManager.Instance?.StartGame();
         TimerManager.Instance?.StartTimer();
         TargetSpawner.Instance?.StartSpawning();
