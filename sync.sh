@@ -4,26 +4,26 @@
 
 cd /opt/SKILLZ-TAP-RUSH
 
-case " in
+case "$1" in
   pull)
-    echo [Sync] Pulling from GitHub...
+    echo "[Sync] Pulling from GitHub..."
     git pull origin main --ff-only
-    echo [Sync] Pull complete
+    echo "[Sync] Pull complete"
     ;;
   push)
-    echo [Sync] Pushing to GitHub...
+    echo "[Sync] Pushing to GitHub..."
     git push origin main
-    echo [Sync] Push complete
+    echo "[Sync] Push complete"
     ;;
   status)
-    echo [Sync] Current status:
+    echo "[Sync] Current status:"
     git status
-    echo "
-    echo [Sync] Remote:
+    echo ""
+    echo "[Sync] Remote:"
     git remote -v
     ;;
   *)
-    echo Usage: {pull|push|status}
+    echo "Usage: $0 {pull|push|status}"
     exit 1
     ;;
 esac
