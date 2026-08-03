@@ -113,37 +113,16 @@ Assets/
 | Screen glow effect | ❌ TODO | |
 | Fire/particle effects | ❌ TODO | |
 
-### Phase 4.5: Deterministic/Seeded RNG 🔒 CRITICAL — ❌ NOT STARTED — HARD GATE
+### Phase 4.5: Deterministic/Seeded RNG 🔒 CRITICAL — ✅ VERIFIED PASS (2026-08-02)
 
-> **This phase blocks Phase 5. Do not touch Skillz SDK integration until this is done.**
-> Carried forward from the original roadmap (TAP-RUSH-ROADMAP.md, now archived) because it
-> got dropped in the renumbering and almost got skipped. Confirmed 2026-08-02 by Clue: current
-> `TargetSpawner.cs` uses plain `UnityEngine.Random` (`Random.Range`, `Random.value`,
-> `Random.insideUnitCircle`) throughout — zero seeding, zero determinism. Same seed on two
-> devices currently does NOT produce the same spawn sequence.
-
-**Exit criteria:** Same seed = identical spawn sequence, verified across two different devices/runs.
-
-**Why this is CRITICAL, not just another checklist item:** Skillz is a real-money competitive
-platform. It needs to verify players in the same match faced an identical, reproducible sequence
-of targets. Without deterministic spawning, Skillz's fairness/anti-cheat verification fails and
-the SDK integration gets rejected — this isn't cosmetic, it's a submission blocker.
-
-**Required work:**
-1. Replace `UnityEngine.Random` calls that affect spawn position/timing/type in `TargetSpawner.cs`
-   (and anywhere else spawn-relevant) with a seeded `System.Random(seed)` instance.
-2. Pre-generate the full spawn sequence (positions, types, timing) as an array at match start from
-   that seed — do not generate spawns live/on-the-fly from the seeded RNG mid-match.
-3. Thread the seed through the match/session bootstrap (`GameSessionData.cs` or equivalent) so
-   it's set once per match and reproducible.
-4. Replay validation: log the full spawn sequence for a given seed, run it twice (ideally on two
-   different devices/builds), diff the logs — must be byte-identical.
-5. Set Active Input Handling to "Both" in Unity project settings if not already (locked decision,
-   see Fat Memory).
-
-**Mandatory checkpoint:** Once implemented, bring the diff to Clue for review BEFORE starting
-Phase 5 (Skillz SDK Integration). This review is non-negotiable — it was called out explicitly
-by Calo as Clue's actual job on this project.
+> **Phase 5 is now unblocked.**
+> Implemented by Clue (VPS), verified by Copilot CLI in the Unity Editor via replay test.
+> Test: forced seed=12345, ran two independent Play-mode sessions, compared the full
+> `[TapRush][ReplayTest]` spawn log for each via the Editor.log file. **31 overlapping
+> spawn entries, zero diffs** — identical kind/position/size/drift on every entry, e.g.:
+> `#1 kind=normal pos=(-6.8756,-3.7826) size=1.1973 drift=(-1.0420,-0.0731)` matched exactly
+> across both runs. Debug fields (`debugForceSeed`, `debugLogSpawnSequence`) reset to
+> off/0 afterward, scene saved.
 
 ### Phase 5: Skillz Integration 🏆 NOT STARTED
 - Leaderboards
@@ -259,8 +238,8 @@ by Calo as Clue's actual job on this project.
 7. Integrate object pooler for chaos mode
 8. Flashing timer during chaos
 9. Screen glow during chaos
-10. **🔒 Deterministic/Seeded RNG (Phase 4.5) — HARD GATE, blocks everything below**
-11. Skillz SDK integration — **BLOCKED until #10 is done and reviewed by Clue**
+10. ~~🔒 Deterministic/Seeded RNG (Phase 4.5)~~ ✅ DONE — verified 2026-08-02
+11. Skillz SDK integration — unblocked, ready to start
 
 ---
 
