@@ -109,6 +109,10 @@ public class UIManager : MonoBehaviour
 
         comboText.text = "Combo x" + Mathf.Max(combo, 0);
         comboText.color = combo >= 2 ? new Color(1f, 0.95f, 0.45f, 1f) : new Color(1f, 1f, 1f, 0.75f);
+
+        // Update streak bar
+        ComboStreakBar.Instance?.UpdateCombo(combo);
+        if (combo == 0) ComboStreakBar.Instance?.OnComboReset();
     }
 
     public void ShowComboMilestone(int comboCount)

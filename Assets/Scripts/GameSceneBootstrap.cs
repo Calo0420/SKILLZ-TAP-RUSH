@@ -7,6 +7,8 @@ public class GameSceneBootstrap : MonoBehaviour
         SetupVisualEnvironment();
         EnsureWrongTapDetector();
         EnsureFloatingTextManager();
+        EnsureReactiveBackground();
+        EnsureComboStreakBar();
 
         // Small delay to ensure all Awake/Start calls finish on GameManager, TimerManager, etc.
         Invoke(nameof(BeginGame), 0.1f);
@@ -51,5 +53,23 @@ public class GameSceneBootstrap : MonoBehaviour
         GameObject managerRoot = new GameObject("FloatingTextManager");
         managerRoot.AddComponent<FloatingTextManager>();
         Debug.Log("[TapRush] Auto-wired missing FloatingTextManager in GameScene.");
+    }
+
+    private void EnsureReactiveBackground()
+    {
+        ReactiveBackground existing = FindAnyObjectByType<ReactiveBackground>();
+        if (existing != null) return;
+
+        GameObject bgGO = new GameObject("ReactiveBackground");
+        bgGO.AddComponent<ReactiveBackground>();
+    }
+
+    private void EnsureComboStreakBar()
+    {
+        ComboStreakBar existing = FindAnyObjectByType<ComboStreakBar>();
+        if (existing != null) return;
+
+        GameObject barGO = new GameObject("ComboStreakBar");
+        barGO.AddComponent<ComboStreakBar>();
     }
 }

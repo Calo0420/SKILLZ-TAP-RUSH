@@ -77,6 +77,20 @@ public class FloatingTextManager : MonoBehaviour
         Vector2 startPos = rectTransform.anchoredPosition;
         Vector2 endPos = startPos + Vector2.up * floatDistance;
         
+        // Initial scale punch
+        Vector3 baseScale = floatingObj.transform.localScale;
+        float punchDuration = 0.12f;
+        float punchElapsed = 0f;
+        while (punchElapsed < punchDuration)
+        {
+            punchElapsed += Time.deltaTime;
+            float pt = punchElapsed / punchDuration;
+            float s = pt < 0.5f ? Mathf.Lerp(1f, 1.4f, pt / 0.5f) : Mathf.Lerp(1.4f, 1f, (pt - 0.5f) / 0.5f);
+            floatingObj.transform.localScale = baseScale * s;
+            yield return null;
+        }
+        floatingObj.transform.localScale = baseScale;
+
         float elapsed = 0f;
         while (elapsed < floatDuration)
         {
@@ -87,9 +101,13 @@ public class FloatingTextManager : MonoBehaviour
             float easeT = 1f - (1f - t) * (1f - t);
             rectTransform.anchoredPosition = Vector2.Lerp(startPos, endPos, easeT);
 
-            // Fade out
+            // Slight horizontal drift for organic feel
+            float drift = Mathf.Sin(t * Mathf.PI * 2f) * 8f;
+            rectTransform.anchoredPosition += new Vector2(drift, 0f);
+
+            // Fade out in last 40%
             Color color = textMesh.color;
-            color.a = Mathf.Lerp(1f, 0f, t);
+            color.a = t > 0.6f ? Mathf.Lerp(1f, 0f, (t - 0.6f) / 0.4f) : 1f;
             textMesh.color = color;
 
             yield return null;

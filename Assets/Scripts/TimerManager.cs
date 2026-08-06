@@ -91,5 +91,6 @@ private System.Collections.IEnumerator TriggerChaosFinale()
         TargetSpawner.Instance?.EnterChaosMode();
         AudioManager.Instance?.SetChaosMusicState(true);
         ScreenFX.Instance?.SetChaosMode(true);
+        FindAnyObjectByType<ReactiveBackground>()?.SetChaosMode(true);
     }
 }
