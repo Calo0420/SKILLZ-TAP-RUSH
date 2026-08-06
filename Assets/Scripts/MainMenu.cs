@@ -91,13 +91,13 @@ public class MainMenu : MonoBehaviour
         subtitle.color = new Color(0.6f, 0.6f, 0.7f, 0.8f);
 
         // Practice button
-        playButton = CreateMenuButton(canvasObj.transform, "PracticeBtn", "⚡ PRACTICE", new Vector2(0.5f, 0.45f),
+        playButton = CreateMenuButton(canvasObj.transform, "PracticeBtn", "PRACTICE", new Vector2(0.5f, 0.45f),
             new Color(0.1f, 0.3f, 0.15f, 1f), new Color(0.3f, 1f, 0.5f, 1f));
         playButton.onClick.AddListener(OnPracticePressed);
         StartCoroutine(ButtonHoverPulse(playButton));
 
         // Compete button
-        competeButton = CreateMenuButton(canvasObj.transform, "CompeteBtn", "🏆 COMPETE", new Vector2(0.5f, 0.35f),
+        competeButton = CreateMenuButton(canvasObj.transform, "CompeteBtn", "COMPETE", new Vector2(0.5f, 0.35f),
             new Color(0.3f, 0.15f, 0.05f, 1f), new Color(1f, 0.85f, 0.2f, 1f));
         competeButton.onClick.AddListener(OnCompetePressed);
         StartCoroutine(ButtonHoverPulse(competeButton));
