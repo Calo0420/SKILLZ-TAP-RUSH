@@ -37,6 +37,7 @@ public class UIManager : MonoBehaviour
     private Vector3 timerBaseScale = Vector3.one;
     private Color timerBaseColor = Color.white;
     private bool timerStyleInitialized;
+    private bool chaosTimerActive;
 
     void Awake()
     {
@@ -442,6 +443,11 @@ public void ShowChaosAnnouncement()
         cameraShakeRoutine = null;
     }
 
+    public void SetChaosTimerMode(bool active)
+    {
+        chaosTimerActive = active;
+    }
+
     private void ApplyTimerLowTimePulse(float time)
     {
         if (timerText == null)
@@ -454,6 +460,16 @@ public void ShowChaosAnnouncement()
             timerBaseScale = timerText.transform.localScale;
             timerBaseColor = timerText.color;
             timerStyleInitialized = true;
+        }
+
+        if (chaosTimerActive && time > 0f)
+        {
+            // Intense chaos flash — rapid red/white alternation
+            float flash = Mathf.Sin(Time.unscaledTime * 25f);
+            float scale = 1f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 8f)) * 0.25f;
+            timerText.transform.localScale = timerBaseScale * scale;
+            timerText.color = flash > 0f ? new Color(1f, 0.15f, 0.15f, 1f) : new Color(1f, 1f, 1f, 1f);
+            return;
         }
 
         if (time > 0f && time <= lowTimeThresholdSeconds)

@@ -65,11 +65,22 @@ public class EndScreenManager : MonoBehaviour
 
     public void PlayAgain()
     {
+        // In Skillz match, "Play Again" should go back to Skillz UI, not directly to game
+        if (SkillzMatchController.Instance != null && SkillzMatchController.Instance.IsSkillzMatch())
+        {
+            SkillzMatchController.Instance.ShowResults(GameSessionData.LastScore);
+            return;
+        }
         SceneManager.LoadScene("GameScene");
     }
 
     public void GoToMainMenu()
     {
+        if (SkillzMatchController.Instance != null && SkillzMatchController.Instance.IsSkillzMatch())
+        {
+            SkillzMatchController.Instance.ShowResults(GameSessionData.LastScore);
+            return;
+        }
         SceneManager.LoadScene("MainMenu");
     }
 }

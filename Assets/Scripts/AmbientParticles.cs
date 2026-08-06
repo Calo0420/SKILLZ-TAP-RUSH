@@ -99,8 +99,26 @@ public class AmbientParticles : MonoBehaviour
         {
             Material pMat = new Material(pShader);
             pMat.SetFloat("_Surface", 1);
+            pMat.mainTexture = GenerateSoftDot(32);
             psr.material = pMat;
         }
         psr.sortingOrder = -1; // Behind gameplay
+    }
+
+    private static Texture2D GenerateSoftDot(int size)
+    {
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        float center = size * 0.5f;
+        float radius = center - 1f;
+        for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                float alpha = dist > radius ? 0f : Mathf.Pow(1f - dist / radius, 2f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        tex.Apply();
+        return tex;
     }
 }

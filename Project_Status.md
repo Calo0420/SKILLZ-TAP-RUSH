@@ -72,33 +72,33 @@ Assets/
 - Full-screen dynamic spawn bounds (camera-based)
 - Gauge cancels on wrong tap + missed target penalty
 
-### Phase 3: Juice & Polish 🔥 IN PROGRESS
+### Phase 3: Juice & Polish ✅ COMPLETE
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Neon 2D visuals | ✅ Done | NeonTargetFX: glow rings, color-coded, pulse animation |
-| Particle bursts on tap | ✅ Done | 16-24 particles, color-matched, detach on destroy |
-| URP Bloom post-processing | ✅ Done | Global volume, intensity 2.5, threshold 0.6 |
-| Dark background | ✅ Done | Near-black (0.02, 0.02, 0.06) |
-| Correct tap sound | ✅ Done | WAV_UI-007.wav |
-| Wrong tap buzz | ✅ Done | WAV_UI-021.wav |
-| Combo milestone sound | ✅ Done | WAV_UI-029.wav |
-| Bonus hit sound | ✅ Done | Louder (1.5x vol) |
-| Gauge tap/complete SFX | ✅ Done | WAV_UI-003 / WAV_UI-014 |
-| Music (normal) | ✅ Done | 06_Supernova.ogg |
-| Music (chaos) | ✅ Done | 08_Battlestations.ogg |
-| Camera shake (combos) | ✅ Done | 0.16s duration |
+| Particle bursts on tap | ✅ Done | 16-24 soft round particles, color-matched, detach on destroy |
+| URP Bloom post-processing | ✅ Done | Combo-reactive bloom (ScreenFX), chromatic aberration on wrong tap |
+| Dark background | ✅ Done | ReactiveBackground: shifts with combo/chaos |
+| Dynamic music system | ✅ Done | Crossfade, combo pitch ramp, tap ducking, musical pentatonic taps |
+| Music (normal) | ✅ Done | WS Data Breach (Wirescapes cyberpunk) |
+| Music (chaos) | ✅ Done | WS Urban Decay + SciFi ForceField chaos cue |
+| All SFX | ✅ Done | Correct/wrong/combo/gauge/countdown with pitch scaling |
+| Camera shake | ✅ Done | Combo milestones + wrong taps |
 | Combo text animation | ✅ Done | Pulse + gold color |
-| Countdown beeps (3-2-1) | ✅ Done | TimerManager triggers one-shot beeps at 3,2,1 via AudioManager |
-| Screen shake on mistakes | ✅ Done | Wrong taps trigger dedicated short camera shake |
-| Floating +points text | ✅ Done | FloatingTextManager shows +points/bonus and wrong-tap penalties |
-| Timer pulse when low | ✅ Done | Timer pulses scale/color when remaining time is ≤10s |
-| Better fonts | ❌ TODO | Replace default TMP |
-| Button animations | ❌ TODO | Press/hover feedback |
-| Score animations | ❌ TODO | Counter roll-up |
-| Animated background | ❌ TODO | Subtle floating particles/stars |
+| Countdown beeps (3-2-1) | ✅ Done | Rising pitch for tension |
+| Floating +points text | ✅ Done | Scale punch + horizontal drift |
+| Timer pulse when low | ✅ Done | Scale/color pulse ≤10s |
+| Button animations | ✅ Done | Subtle pulse on menu buttons |
+| Score animations | ✅ Done | ScorePunchFX on hit, count-up on end screen |
+| Animated background | ✅ Done | AmbientParticles: neon dust intensifies with combo |
+| Tap ripple shockwave | ✅ Done | Color-coded expanding ring on every tap |
+| Target spawn animation | ✅ Done | Elastic pop-in with wobble |
+| Combo streak bar | ✅ Done | Screen-bottom glow bar, color ramps with combo |
+| Reyeso Studio intro | ✅ Done | Video splash scene with fade + skip support |
+| Better fonts | ❌ TODO | Replace default TMP (cosmetic, non-blocking) |
 
-### Phase 4: Chaos Finale 🔥 MOSTLY DONE
+### Phase 4: Chaos Finale ✅ COMPLETE
 
 | Feature | Status | Notes |
 |---------|--------|-------|
@@ -108,10 +108,10 @@ Assets/
 | Red flood (2-4 per wave) | ✅ Done | 55% red chance (rebalanced) |
 | Green targets in chaos | ✅ Done | 75% green chance |
 | Faster spawn (0.08s floor) | ✅ Done | Multi-target enabled |
-| Music switch + pitch up | ✅ Done | 1.2x pitch |
-| Flashing timer | ❌ TODO | |
-| Screen glow effect | ❌ TODO | |
-| Fire/particle effects | ❌ TODO | |
+| Music switch + pitch up | ✅ Done | 1.2x pitch + crossfade |
+| Flashing timer | ✅ Done | Rapid red/white alternation during chaos |
+| Screen glow effect | ✅ Done | ScreenFX: vignette + bloom surge |
+| Chaos particles | ✅ Done | Ambient particles intensify |
 
 ### Phase 4.5: Deterministic/Seeded RNG 🔒 CRITICAL — ✅ VERIFIED PASS (2026-08-02)
 
@@ -124,11 +124,18 @@ Assets/
 > across both runs. Debug fields (`debugForceSeed`, `debugLogSpawnSequence`) reset to
 > off/0 afterward, scene saved.
 
-### Phase 5: Skillz Integration 🏆 NOT STARTED
-- Leaderboards
-- Tournaments / PvP matchmaking
-- Prize support via Skillz infrastructure
-- SDK already imported, needs gameplay wiring
+### Phase 5: Skillz Integration 🏆 WIRED — READY FOR TESTING
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| SkillzManager in MainMenu | ✅ Done | DontDestroyOnLoad, scene fields configured |
+| SkillzMatchController | ✅ Done | Bridges match lifecycle: seed, score, abort |
+| Skillz seed → GameSessionData | ✅ Done | OnMatchWillBegin extracts Skillz Random seed |
+| Score submission | ✅ Done | SubmitScore + DisplayTournamentResultsWithScore |
+| MainMenu Practice button | ✅ Done | Plays without Skillz |
+| MainMenu Compete button | ✅ Done | LaunchSkillz() into tournament UI |
+| EndScreen Skillz flow | ✅ Done | Returns to Skillz results in tournament mode |
+| SDK already imported | ✅ Done | Needs device testing (Editor uses SIDEkick) |
 
 ### Phase 6: Monetization Testing 💰 NOT STARTED
 - Data gathering (match completion, session time, retention)
@@ -157,7 +164,7 @@ Assets/
 | 1 | Music doesn't auto-play at game start | Medium | ✅ Fixed (clipChanged tracking) |
 | 2 | Combo resets from expired targets in multi-mode | Medium | ✅ Fixed (miss no longer penalizes) |
 | 3 | Object pooling not used — GC spikes during chaos mode on mobile | Medium | Open |
-| 4 | Square default particles (should be round soft sprites) | Low | Open |
+| 4 | Square default particles (should be round soft sprites) | Low | ✅ Fixed (procedural soft round texture) |
 
 ---
 
@@ -229,17 +236,19 @@ Assets/
 
 ## 📌 Next Actions (Priority Order)
 
-1. Add floating score text (+100, +300 BONUS flying up)
-2. Add countdown beeps (3-2-1)
-3. Add timer pulse animation (scale/color when ≤10s)
-4. Screen shake on wrong taps
-5. Round soft particle sprites (replace square defaults)
-6. Animated background (subtle floating particles/stars)
-7. Integrate object pooler for chaos mode
-8. Flashing timer during chaos
-9. Screen glow during chaos
-10. ~~🔒 Deterministic/Seeded RNG (Phase 4.5)~~ ✅ DONE — verified 2026-08-02
-11. Skillz SDK integration — unblocked, ready to start
+1. ~~Floating score text~~ ✅ DONE
+2. ~~Countdown beeps~~ ✅ DONE
+3. ~~Timer pulse animation~~ ✅ DONE
+4. ~~Screen shake on wrong taps~~ ✅ DONE
+5. ~~Round soft particle sprites~~ ✅ DONE
+6. ~~Animated background~~ ✅ DONE
+7. Integrate object pooler for chaos mode GC performance
+8. ~~Flashing timer during chaos~~ ✅ DONE
+9. ~~Screen glow during chaos~~ ✅ DONE
+10. ~~Deterministic/Seeded RNG (Phase 4.5)~~ ✅ DONE
+11. ~~Skillz SDK integration~~ ✅ WIRED — needs device testing
+12. Device build + Skillz SIDEkick testing
+13. Better fonts (cosmetic, non-blocking)
 
 ---
 

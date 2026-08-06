@@ -91,6 +91,31 @@ public class NeonTargetFX : MonoBehaviour
         }
     }
 
+    // --- Cached soft round particle texture ---
+    private static Texture2D softParticleTexture;
+
+    private static Texture2D GetSoftParticleTexture()
+    {
+        if (softParticleTexture != null) return softParticleTexture;
+        int size = 64;
+        softParticleTexture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        softParticleTexture.filterMode = FilterMode.Bilinear;
+        float center = size * 0.5f;
+        float radius = center - 1f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dist = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                float norm = dist / radius;
+                float alpha = norm > 1f ? 0f : Mathf.Pow(1f - norm, 2f);
+                softParticleTexture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+            }
+        }
+        softParticleTexture.Apply();
+        return softParticleTexture;
+    }
+
     private void CreateBurstParticles()
     {
         GameObject psObj = new GameObject("TapBurst");
@@ -143,7 +168,7 @@ public class NeonTargetFX : MonoBehaviour
         sizeOverLife.size = new ParticleSystem.MinMaxCurve(1f,
             AnimationCurve.EaseInOut(0f, 1f, 1f, 0f));
 
-        // Use default particle material
+        // Soft round particle material
         var psr = psObj.GetComponent<ParticleSystemRenderer>();
         psr.renderMode = ParticleSystemRenderMode.Billboard;
         Shader pShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
@@ -152,6 +177,7 @@ public class NeonTargetFX : MonoBehaviour
         {
             Material pMat = new Material(pShader);
             pMat.SetFloat("_Surface", 1); // transparent
+            pMat.mainTexture = GetSoftParticleTexture();
             psr.material = pMat;
         }
     }

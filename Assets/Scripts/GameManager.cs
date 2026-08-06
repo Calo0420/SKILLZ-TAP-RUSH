@@ -189,6 +189,9 @@ public void EndGame()
 
         GameSessionData.LastScore = Score;
 
+        // Report score to Skillz if in a tournament match
+        SkillzMatchController.Instance?.ReportScore(Score);
+
         if (UIManager.Instance != null && UIManager.Instance.ShowEndScreen(Score))
         {
             return;

@@ -709,6 +709,142 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1497451676}
   m_CullTransparentMesh: 1
+--- !u!1 &1506340755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1506340757}
+  - component: {fileID: 1506340756}
+  m_Layer: 0
+  m_Name: SkillzManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1506340756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1506340755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8449aa90d7ec243538ec69b95b0ce133, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillzManager
+  gameScene:
+    m_SceneAsset: {fileID: 102900000, guid: 58c71ab598ac50f41bf893dc0c7bec0a, type: 3}
+    m_SceneName: GameScene
+  onMatchWillBegin:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1525713157}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: OnSkillzMatchWillBegin
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  startMenuScene:
+    m_SceneAsset: {fileID: 102900000, guid: 9ce6da30026c3764baffd23eb6d2bed8, type: 3}
+    m_SceneName: MainMenu
+  onSkillzWillExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1525713157}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: OnSkillzWillExit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  progressionRoomScene:
+    m_SceneAsset: {fileID: 0}
+    m_SceneName: 
+  onProgressionRoomEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  tutorialScreenScene:
+    m_SceneAsset: {fileID: 0}
+    m_SceneName: 
+  onTutorialScreenEnter:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1506340757
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1506340755}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1525713156
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1525713158}
+  - component: {fileID: 1525713157}
+  m_Layer: 0
+  m_Name: SkillzMatchController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1525713157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525713156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4f7cdb7f3e4f4c0489c15430b4e5247, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillzMatchController
+--- !u!4 &1525713158
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1525713156}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1788962950
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,6 +874,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3cd6e3047e3265428736ffb536fa900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
+  playButton: {fileID: 0}
+  competeButton: {fileID: 0}
 --- !u!4 &1788962952
 Transform:
   m_ObjectHideFlags: 0
@@ -760,3 +898,5 @@ SceneRoots:
   - {fileID: 561513624}
   - {fileID: 1167309919}
   - {fileID: 1788962952}
+  - {fileID: 1506340757}
+  - {fileID: 1525713158}
