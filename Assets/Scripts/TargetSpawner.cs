@@ -200,7 +200,7 @@ public void EnterChaosMode()
 
 void Update()
     {
-        if (!spawning || !GameManager.Instance.IsGameActive) return;
+        if (!spawning || GameManager.Instance == null || !GameManager.Instance.IsGameActive) return;
 
         // Gauge power-up timer (disabled once chaos mode starts).
         if (!chaosModeActive)

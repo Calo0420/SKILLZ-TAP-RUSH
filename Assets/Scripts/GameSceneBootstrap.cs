@@ -6,6 +6,7 @@ public class GameSceneBootstrap : MonoBehaviour
     {
         SetupVisualEnvironment();
         EnsureWrongTapDetector();
+        EnsureFloatingTextManager();
 
         // Small delay to ensure all Awake/Start calls finish on GameManager, TimerManager, etc.
         Invoke(nameof(BeginGame), 0.1f);
@@ -40,5 +41,15 @@ public class GameSceneBootstrap : MonoBehaviour
         GameObject detectorRoot = new GameObject("WrongTapDetector");
         detectorRoot.AddComponent<WrongTapDetector>();
         Debug.Log("[TapRush] Auto-wired missing WrongTapDetector in GameScene.");
+    }
+
+    private void EnsureFloatingTextManager()
+    {
+        FloatingTextManager existingManager = FindAnyObjectByType<FloatingTextManager>();
+        if (existingManager != null) return;
+
+        GameObject managerRoot = new GameObject("FloatingTextManager");
+        managerRoot.AddComponent<FloatingTextManager>();
+        Debug.Log("[TapRush] Auto-wired missing FloatingTextManager in GameScene.");
     }
 }

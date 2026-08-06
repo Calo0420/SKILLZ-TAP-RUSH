@@ -55,6 +55,9 @@ public class WrongTapDetector : MonoBehaviour
         }
 
         GameManager.Instance.RegisterWrongTap();
+        
+        // Show floating text for wrong tap
+        FloatingTextManager.Instance?.ShowFloatingScore(worldPoint, -75, isBonus: false, isPenalty: true);
     }
 
 private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)

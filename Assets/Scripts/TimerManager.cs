@@ -10,6 +10,7 @@ public class TimerManager : MonoBehaviour
 
     private float timeRemaining;
     private bool isRunning;
+    private int lastCountdownSecondPlayed;
 
     [Header("Chaos Finale")]
     [SerializeField] private float chaosStartTimeRemaining = 15f;
@@ -31,6 +32,7 @@ public void StartTimer()
         timeRemaining = matchDuration;
         isRunning = true;
         chaosTriggered = false;
+        lastCountdownSecondPlayed = -1;
     }
 
 void Update()
@@ -38,7 +40,9 @@ void Update()
         if (!isRunning) return;
 
         timeRemaining -= Time.deltaTime;
-        UIManager.Instance?.UpdateTimer(Mathf.Max(timeRemaining, 0f));
+        float clampedTimeRemaining = Mathf.Max(timeRemaining, 0f);
+        UIManager.Instance?.UpdateTimer(clampedTimeRemaining);
+        TryPlayCountdownBeeps(clampedTimeRemaining);
 
         if (!chaosTriggered && timeRemaining <= chaosStartTimeRemaining)
         {
@@ -57,6 +61,23 @@ void Update()
 
     public float GetTimeRemaining() => Mathf.Max(timeRemaining, 0f);
 
+    private void TryPlayCountdownBeeps(float clampedTimeRemaining)
+    {
+        int displayedSecond = Mathf.CeilToInt(clampedTimeRemaining);
+        if (displayedSecond < 1 || displayedSecond > 3)
+        {
+            return;
+        }
+
+        if (displayedSecond == lastCountdownSecondPlayed)
+        {
+            return;
+        }
+
+        lastCountdownSecondPlayed = displayedSecond;
+        AudioManager.Instance?.PlayCountdownBeep(displayedSecond);
+    }
+
 
 private System.Collections.IEnumerator TriggerChaosFinale()
     {
@@ -69,5 +90,6 @@ private System.Collections.IEnumerator TriggerChaosFinale()
 
         TargetSpawner.Instance?.EnterChaosMode();
         AudioManager.Instance?.SetChaosMusicState(true);
+        ScreenFX.Instance?.SetChaosMode(true);
     }
 }

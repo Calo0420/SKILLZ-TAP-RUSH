@@ -89,10 +89,10 @@ Assets/
 | Music (chaos) | ✅ Done | 08_Battlestations.ogg |
 | Camera shake (combos) | ✅ Done | 0.16s duration |
 | Combo text animation | ✅ Done | Pulse + gold color |
-| Countdown beeps (3-2-1) | ❌ TODO | |
-| Screen shake on mistakes | ❌ TODO | |
-| Floating +points text | ❌ TODO | Numbers fly up on hit |
-| Timer pulse when low | ❌ TODO | Scale/color at ≤10s |
+| Countdown beeps (3-2-1) | ✅ Done | TimerManager triggers one-shot beeps at 3,2,1 via AudioManager |
+| Screen shake on mistakes | ✅ Done | Wrong taps trigger dedicated short camera shake |
+| Floating +points text | ✅ Done | FloatingTextManager shows +points/bonus and wrong-tap penalties |
+| Timer pulse when low | ✅ Done | Timer pulses scale/color when remaining time is ≤10s |
 | Better fonts | ❌ TODO | Replace default TMP |
 | Button animations | ❌ TODO | Press/hover feedback |
 | Score animations | ❌ TODO | Counter roll-up |

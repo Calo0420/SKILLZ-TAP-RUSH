@@ -25,5 +25,5 @@ MonoBehaviour:
   SeasonsTemplate: {fileID: 11400000, guid: a562fa0df35f6417981453395094306c, type: 2}
   Score: 
   IsLeavingProgressionRoom: 0
-  IsLaunching: 1
+  IsLaunching: 0
   hasSetSIDEkickDefaults: 1

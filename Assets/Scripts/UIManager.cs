@@ -14,6 +14,12 @@ public class UIManager : MonoBehaviour
     [SerializeField] private float comboMilestoneDisplaySeconds = 0.65f;
     [SerializeField] private float comboShakeDuration = 0.16f;
     [SerializeField] private float comboShakeMagnitude = 0.08f;
+    [SerializeField] private float wrongTapShakeDuration = 0.12f;
+    [SerializeField] private float wrongTapShakeMagnitude = 0.12f;
+    [SerializeField] private float lowTimeThresholdSeconds = 10f;
+    [SerializeField] private float timerPulseScale = 0.15f;
+    [SerializeField] private float timerPulseFrequency = 12f;
+    [SerializeField] private Color timerLowColor = new Color(1f, 0.35f, 0.35f, 1f);
 
     private GameObject runtimeEndScreenRoot;
     private TextMeshProUGUI runtimeFinalScoreText;
@@ -23,15 +29,44 @@ public class UIManager : MonoBehaviour
     private Coroutine powerUpDisplayRoutine;
     private TextMeshProUGUI chaosAnnouncementText;
     private UnityEngine.UI.Image chaosFlashImage;
+    private UnityEngine.UI.Image chaosBackdropImage;
     private Coroutine chaosAnnouncementRoutine;
 
 
     private Coroutine cameraShakeRoutine;
+    private Vector3 timerBaseScale = Vector3.one;
+    private Color timerBaseColor = Color.white;
+    private bool timerStyleInitialized;
 
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        ConfigureHudLayout();
+    }
+
+    private void ConfigureHudLayout()
+    {
+        ConfigureTopLabel(scoreText, new Vector2(0.02f, 0.965f), TextAlignmentOptions.TopLeft, new Vector2(520f, 120f), 42f);
+        ConfigureTopLabel(timerText, new Vector2(0.98f, 0.965f), TextAlignmentOptions.TopRight, new Vector2(280f, 120f), 50f);
+        ConfigureTopLabel(comboText, new Vector2(0.5f, 0.965f), TextAlignmentOptions.Top, new Vector2(560f, 120f), 42f);
+    }
+
+    private static void ConfigureTopLabel(TextMeshProUGUI label, Vector2 anchor, TextAlignmentOptions alignment, Vector2 size, float fontSize)
+    {
+        if (label == null)
+        {
+            return;
+        }
+
+        RectTransform rect = label.rectTransform;
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(anchor.x, anchor.y);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = size;
+        label.alignment = alignment;
+        label.fontSize = fontSize;
     }
 
     public void UpdateScore(int score)
@@ -39,6 +74,10 @@ public class UIManager : MonoBehaviour
         if (scoreText != null)
         {
             scoreText.text = "Score: " + score;
+            ScorePunchFX punch = scoreText.GetComponent<ScorePunchFX>();
+            if (punch == null) punch = scoreText.gameObject.AddComponent<ScorePunchFX>();
+            float intensity = GameManager.Instance != null ? Mathf.Clamp01(GameManager.Instance.ComboCount / 15f) : 0.5f;
+            punch.Punch(intensity);
         }
     }
 
@@ -47,7 +86,18 @@ public class UIManager : MonoBehaviour
         if (timerText != null)
         {
             timerText.text = Mathf.CeilToInt(time).ToString();
+            ApplyTimerLowTimePulse(time);
         }
+    }
+
+    public void PlayWrongTapCameraShake()
+    {
+        if (cameraShakeRoutine != null)
+        {
+            StopCoroutine(cameraShakeRoutine);
+        }
+
+        cameraShakeRoutine = StartCoroutine(PlayCameraShake(wrongTapShakeDuration, wrongTapShakeMagnitude));
     }
 
     public void UpdateCombo(int combo)
@@ -57,14 +107,8 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        if (combo <= 1)
-        {
-            comboText.text = string.Empty;
-        }
-        else
-        {
-            comboText.text = "Combo x" + combo;
-        }
+        comboText.text = "Combo x" + Mathf.Max(combo, 0);
+        comboText.color = combo >= 2 ? new Color(1f, 0.95f, 0.45f, 1f) : new Color(1f, 1f, 1f, 0.75f);
     }
 
     public void ShowComboMilestone(int comboCount)
@@ -219,9 +263,23 @@ public void ShowChaosAnnouncement()
             chaosFlashImage.gameObject.SetActive(false);
         }
 
+        if (chaosBackdropImage == null)
+        {
+            GameObject backdropObject = new GameObject("ChaosBackdrop");
+            backdropObject.transform.SetParent(canvas.transform, false);
+            chaosBackdropImage = backdropObject.AddComponent<UnityEngine.UI.Image>();
+            RectTransform backdropRect = backdropObject.GetComponent<RectTransform>();
+            backdropRect.anchorMin = Vector2.zero;
+            backdropRect.anchorMax = Vector2.one;
+            backdropRect.offsetMin = Vector2.zero;
+            backdropRect.offsetMax = Vector2.zero;
+            chaosBackdropImage.color = new Color(0f, 0f, 0f, 0f);
+            chaosBackdropImage.gameObject.SetActive(false);
+        }
+
         if (chaosAnnouncementText == null)
         {
-            chaosAnnouncementText = CreateLabel(canvas.transform, "ChaosAnnouncementText", 92, new Vector2(0.5f, 0.55f));
+            chaosAnnouncementText = CreateLabel(canvas.transform, "ChaosAnnouncementText", 96, new Vector2(0.5f, 0.62f));
             chaosAnnouncementText.text = string.Empty;
             chaosAnnouncementText.fontStyle = FontStyles.Bold;
             chaosAnnouncementText.alignment = TextAlignmentOptions.Center;
@@ -350,6 +408,11 @@ public void ShowChaosAnnouncement()
 
     private IEnumerator PlayComboCameraShake()
     {
+        yield return PlayCameraShake(comboShakeDuration, comboShakeMagnitude);
+    }
+
+    private IEnumerator PlayCameraShake(float duration, float magnitude)
+    {
         Camera cam = Camera.main;
         if (cam == null)
         {
@@ -361,18 +424,45 @@ public void ShowChaosAnnouncement()
         Vector3 originalPosition = camTransform.position;
         float elapsed = 0f;
 
-        while (elapsed < comboShakeDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float fade = 1f - Mathf.Clamp01(elapsed / comboShakeDuration);
-            float x = Random.Range(-1f, 1f) * comboShakeMagnitude * fade;
-            float y = Random.Range(-1f, 1f) * comboShakeMagnitude * fade;
+            float fade = 1f - Mathf.Clamp01(elapsed / duration);
+            float x = Random.Range(-1f, 1f) * magnitude * fade;
+            float y = Random.Range(-1f, 1f) * magnitude * fade;
             camTransform.position = new Vector3(originalPosition.x + x, originalPosition.y + y, originalPosition.z);
             yield return null;
         }
 
         camTransform.position = originalPosition;
         cameraShakeRoutine = null;
+    }
+
+    private void ApplyTimerLowTimePulse(float time)
+    {
+        if (timerText == null)
+        {
+            return;
+        }
+
+        if (!timerStyleInitialized)
+        {
+            timerBaseScale = timerText.transform.localScale;
+            timerBaseColor = timerText.color;
+            timerStyleInitialized = true;
+        }
+
+        if (time > 0f && time <= lowTimeThresholdSeconds)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * timerPulseFrequency);
+            float scale = 1f + (timerPulseScale * pulse);
+            timerText.transform.localScale = timerBaseScale * scale;
+            timerText.color = Color.Lerp(timerBaseColor, timerLowColor, pulse);
+            return;
+        }
+
+        timerText.transform.localScale = timerBaseScale;
+        timerText.color = timerBaseColor;
     }
 
     private Button CreateButton(Transform parent, string objectName, string label, Vector2 anchor)

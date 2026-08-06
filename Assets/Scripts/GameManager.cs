@@ -175,7 +175,9 @@ public void ActivatePowerUp(float duration)
 
         ResetCombo("wrong tap");
         UIManager.Instance?.UpdateScore(Score);
+        UIManager.Instance?.PlayWrongTapCameraShake();
         AudioManager.Instance?.PlayWrongTap();
+        ScreenFX.Instance?.OnWrongTap();
     }
 
 public void EndGame()
@@ -219,6 +221,7 @@ public void EndGame()
 
         ComboCount = 0;
         UIManager.Instance?.UpdateCombo(ComboCount);
+        ScreenFX.Instance?.OnComboReset();
 
         // Reset spawn speed-ups earned from combo milestones
         TargetSpawner.Instance?.ResetComboSpeed();
