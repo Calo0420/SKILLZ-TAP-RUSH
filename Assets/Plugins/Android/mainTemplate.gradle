@@ -25,9 +25,8 @@ apply from: '../shared/common.gradle'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation ("com.skillz.sdk:skillz-sdk-android:2025.0.50")
-    {
-        transitive = false
+    implementation ("com.skillz.sdk:skillz-sdk-android:2025.0.50") {
+        exclude group: 'com.github.chthai64', module: 'SwipeRevealLayout'
     }
 // Android Resolver Dependencies Start
     implementation 'androidx.appcompat:appcompat:1.6.1' // Assets/Skillz/Editor/SkillzDependencies.xml:12
