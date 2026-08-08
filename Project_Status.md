@@ -250,7 +250,7 @@ Assets/
 12. Device build + Skillz SIDEkick testing — release keystore wired + verified (464fd4c), APK release-signed, ready to test
 13. Better fonts (cosmetic, non-blocking)
 14. ~~Mid-match backgrounding/abort handling~~ ✅ DONE — `GameManager.OnApplicationPause()` added per official Skillz Unity docs (freezes `Time.timeScale` on background, resumes on return). Deliberately does NOT call `AbortMatch()` — confirmed via https://docs.skillz.com/docs/aborts that Skillz's SDK auto-detects/categorizes backgrounded/terminated/timeout/crash aborts server-side; calling AbortMatch() ourselves for routine backgrounding would inflate the game's real abort-rate metric. `AbortMatch()` reserved for a possible future in-game "forfeit" button (which per the same doc should submit a real score, not an abort).
-15. **Recommended next (not yet done):** Skillz's "Launch the Skillz UI" doc (https://docs.skillz.com/docs/launch-skillz-ui/) recommends a dedicated "Loading" scene loaded via `SceneManager.LoadScene` whenever `LaunchSkillz()` or `ReportFinalScore()`/`SubmitScore()` fires, to guarantee clean state between matches and avoid residual game-state bugs. This needs actual Unity Editor scene creation (not a text-only fix) — flagged for Copilot/Unity Editor pass, not done via VPS shell.
+15. ~~Loading scene / SDK-handoff state cleanup~~ ✅ DONE — Copilot built `LoadingScreen.cs` (code-based overlay, not a separate Unity scene) covering the `LaunchSkillz()` handoff. Clue closed the remaining gap on the score-submission handoff (`ReportScore`/`SubmitScore` → `DisplayTournamentResultsWithScore`), which had no loading transition (commit 8e62a79). Both Skillz SDK handoff points now covered per https://docs.skillz.com/docs/launch-skillz-ui.
 
 ---
 
