@@ -3,8 +3,17 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Bridges Skillz SDK with Tap Rush gameplay.
-/// Handles match lifecycle: seed extraction, score submission, abort.
+/// Handles match lifecycle: seed extraction, score submission.
 /// Lives on a DontDestroyOnLoad object — created in MainMenu or IntroScene.
+///
+/// Abort handling: we deliberately do NOT call SkillzCrossPlatform.AbortMatch() for
+/// crashes/backgrounding/force-quit. Per Skillz's own best-practices doc
+/// (https://docs.skillz.com/docs/aborts), the SDK auto-detects and categorizes those
+/// as server-side aborts (Backgrounded/Terminated/Timeout/Crash) without any client
+/// call needed. AbortMatch() is reserved for a future in-game "forfeit" button, which
+/// per the same doc should submit a real (likely 0) score rather than an abort, since
+/// an abort should never be a way to dodge a bad score. See GameManager.OnApplicationPause
+/// for the mid-match backgrounding freeze/resume handling.
 /// </summary>
 public class SkillzMatchController : MonoBehaviour
 {

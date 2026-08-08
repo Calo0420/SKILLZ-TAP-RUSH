@@ -35,6 +35,34 @@ public int Score { get; private set; }
         Instance = this;
     }
 
+    /// <summary>
+    /// Skillz Unity docs: implement OnApplicationPause defensively to manage game state
+    /// when the app is backgrounded (phone call, notification, home button, app switch).
+    /// See: https://docs.skillz.com/docs/unity-script-execution/
+    ///
+    /// We freeze gameplay cleanly on pause and resume it on return — we do NOT call
+    /// SkillzCrossPlatform.AbortMatch() here. Per Skillz's own best-practices doc
+    /// (https://docs.skillz.com/docs/aborts), the SDK already auto-detects and reports
+    /// backgrounded/terminated/timeout matches server-side with correct categorization.
+    /// Calling AbortMatch() ourselves for routine backgrounding would be an unnecessary
+    /// "Intentional" abort and inflate the game's true abort-rate stability metric.
+    /// </summary>
+    void OnApplicationPause(bool pauseStatus)
+    {
+        if (!IsGameActive) return;
+
+        if (pauseStatus)
+        {
+            Debug.Log("[TapRush] App backgrounded mid-match — freezing gameplay state.");
+            Time.timeScale = 0f;
+        }
+        else
+        {
+            Debug.Log("[TapRush] App resumed mid-match — resuming gameplay.");
+            Time.timeScale = 1f;
+        }
+    }
+
 public void StartGame()
     {
         Score = 0;

@@ -249,6 +249,18 @@ Assets/
 11. ~~Skillz SDK integration~~ ✅ WIRED — needs device testing
 12. Device build + Skillz SIDEkick testing — release keystore wired + verified (464fd4c), APK release-signed, ready to test
 13. Better fonts (cosmetic, non-blocking)
+14. ~~Mid-match backgrounding/abort handling~~ ✅ DONE — `GameManager.OnApplicationPause()` added per official Skillz Unity docs (freezes `Time.timeScale` on background, resumes on return). Deliberately does NOT call `AbortMatch()` — confirmed via https://docs.skillz.com/docs/aborts that Skillz's SDK auto-detects/categorizes backgrounded/terminated/timeout/crash aborts server-side; calling AbortMatch() ourselves for routine backgrounding would inflate the game's real abort-rate metric. `AbortMatch()` reserved for a possible future in-game "forfeit" button (which per the same doc should submit a real score, not an abort).
+15. **Recommended next (not yet done):** Skillz's "Launch the Skillz UI" doc (https://docs.skillz.com/docs/launch-skillz-ui/) recommends a dedicated "Loading" scene loaded via `SceneManager.LoadScene` whenever `LaunchSkillz()` or `ReportFinalScore()`/`SubmitScore()` fires, to guarantee clean state between matches and avoid residual game-state bugs. This needs actual Unity Editor scene creation (not a text-only fix) — flagged for Copilot/Unity Editor pass, not done via VPS shell.
+
+---
+
+## 🔒 Skillz Abort/Backgrounding Policy (added 2026-08-08)
+
+- **Do NOT call `SkillzCrossPlatform.AbortMatch()`** for crashes, backgrounding, or force-quits — Skillz's SDK handles and categorizes these automatically server-side (Backgrounded / Terminated / Timeout / Unintentional Crash). Calling it ourselves adds noise to the abort-rate stability metric Skillz tracks during cert review.
+- **`GameManager.OnApplicationPause(bool)`** freezes `Time.timeScale` to 0 while backgrounded mid-match, resumes to 1 on return — this is the Unity-recommended defensive pattern (https://docs.skillz.com/docs/unity-script-execution/), not an abort mechanism.
+- Score already floors at 0 (`GameManager.RegisterWrongTap`), matching Skillz's guidance that a forfeiting/interrupted player should never show a negative or exploitable score.
+- If an in-game "forfeit"/"quit match" button is ever added, it should submit the player's real current score (or 0 by design), NOT call `AbortMatch()` — per https://docs.skillz.com/docs/aborts, an abort should never be a way to dodge a worse score.
+- Source: official Skillz docs, verified 2026-08-08 — https://docs.skillz.com/docs/aborts and https://docs.skillz.com/docs/unity-script-execution/
 
 ---
 
