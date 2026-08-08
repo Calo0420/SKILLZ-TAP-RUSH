@@ -90,6 +90,7 @@ public class SkillzMatchController : MonoBehaviour
         }
 
         Debug.Log($"[TapRush] Submitting score {score} to Skillz...");
+        LoadingScreen.Show("Submitting score...");
         SkillzCrossPlatform.SubmitScore(score, OnScoreSubmitSuccess, OnScoreSubmitFailure);
     }
 
@@ -112,12 +113,14 @@ public class SkillzMatchController : MonoBehaviour
     private void OnScoreSubmitSuccess()
     {
         Debug.Log("[TapRush] Score submitted successfully to Skillz!");
+        LoadingScreen.Hide();
         ShowResults(GameSessionData.LastScore);
     }
 
     private void OnScoreSubmitFailure(string error)
     {
         Debug.LogError($"[TapRush] Score submission failed: {error}");
+        LoadingScreen.Hide();
         // Still try to show results
         ShowResults(GameSessionData.LastScore);
     }
