@@ -34,6 +34,7 @@ public class SkillzMatchController : MonoBehaviour
     public void LaunchSkillzTournament()
     {
         Debug.Log("[TapRush] Launching Skillz tournament UI...");
+        LoadingScreen.Show("Connecting to Skillz...");
         SkillzCrossPlatform.LaunchSkillz();
     }
 
@@ -44,6 +45,7 @@ public class SkillzMatchController : MonoBehaviour
     {
         isSkillzMatch = false;
         GameSessionData.ResetSeedForNewMatch();
+        LoadingScreen.Show("Loading game...");
         SceneManager.LoadScene("GameScene");
     }
 
@@ -53,6 +55,7 @@ public class SkillzMatchController : MonoBehaviour
     /// </summary>
     public void OnSkillzMatchWillBegin(SkillzSDK.Match matchInfo)
     {
+        LoadingScreen.Show("Starting match...");
         isSkillzMatch = true;
         GameSessionData.ResetSeedForNewMatch();
 

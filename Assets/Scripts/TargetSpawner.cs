@@ -11,8 +11,8 @@ public class TargetSpawner : MonoBehaviour
     [Header("Decoy Settings")]
     [SerializeField] private float decoySpawnChance = 0.3f;
     [SerializeField] private float minSpawnInterval = 0.35f;
-    [SerializeField] private float targetMinScale = 0.5f;
-    [SerializeField] private float targetMaxScale = 1.4f;
+    [SerializeField] private float targetMinScale = 0.45f;
+    [SerializeField] private float targetMaxScale = 0.85f;
     [SerializeField] private float driftSpeedMin = 0.3f;
     [SerializeField] private float driftSpeedMax = 1.2f;
     [SerializeField] private float bonusSpawnChance = 0.08f;
@@ -133,6 +133,8 @@ public void StartSpawning()
         poolGO.AddComponent<TargetPool>();
     }
 
+    private float screenScaleFactor = 1f;
+
     private void ComputeSpawnBounds()
     {
         Camera cam = Camera.main;
@@ -144,19 +146,26 @@ public void StartSpawning()
             xMax = w;
             yMin = -h;
             yMax = h;
+
+            // Scale targets relative to screen width so they look consistent across devices
+            // Reference: 16:9 landscape gives ~8.9 units width. Portrait phones are much narrower.
+            float refWidth = 8.9f;
+            float actualWidth = w * 2f;
+            screenScaleFactor = Mathf.Clamp(actualWidth / refWidth, 0.4f, 1f);
         }
         else
         {
             xMin = -8f; xMax = 8f;
             yMin = -4f; yMax = 4f;
+            screenScaleFactor = 1f;
         }
     }
 
     private void SpawnInitialBurst()
     {
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 7; i++)
             SpawnOne(false, false);
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 2; i++)
             SpawnOne(true, false);
     }
 
@@ -319,17 +328,18 @@ private void SpawnOne(bool asDecoy, bool asBonus)
 
         if (asDecoy)
         {
-            rolledSize = RngRange(targetMinScale, targetMaxScale);
+            rolledSize = RngRange(targetMinScale, targetMaxScale) * screenScaleFactor;
             target.SetSize(rolledSize);
             target.SetAsDecoy();
         }
         else if (asBonus)
         {
             target.SetAsBonus();
+            spawned.transform.localScale *= screenScaleFactor;
         }
         else
         {
-            rolledSize = RngRange(targetMinScale, targetMaxScale);
+            rolledSize = RngRange(targetMinScale, targetMaxScale) * screenScaleFactor;
             target.SetSize(rolledSize);
             float driftMax = driftSpeedMax + milestoneCount * 0.1f;
             rolledDrift = RngInsideUnitCircle().normalized * RngRange(driftSpeedMin, driftMax);
@@ -362,7 +372,7 @@ private void SpawnGauge()
         if (t != null) Destroy(t);
 
         spawned.AddComponent<GaugeTarget>();
-        spawned.transform.localScale *= 1.5f;
+        spawned.transform.localScale *= 1.0f * screenScaleFactor;
         Debug.Log("[TapRush] Gauge power-up spawned!");
     }
 

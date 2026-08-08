@@ -16,6 +16,9 @@ public class GameSceneBootstrap : MonoBehaviour
 
     private void BeginGame()
     {
+        // Hide loading screen if visible
+        LoadingScreen.Hide();
+
         // Phase 4.5: fresh deterministic seed per match (unless Skillz sets MatchSeed
         // externally right after this reset — see GameSessionData for the wiring point).
         GameSessionData.ResetSeedForNewMatch();

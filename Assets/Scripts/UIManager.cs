@@ -420,13 +420,55 @@ public void ShowChaosAnnouncement()
         runtimeFinalScoreText.outlineWidth = 0.2f;
         runtimeFinalScoreText.outlineColor = new Color(0.1f, 0.4f, 0.2f, 0.8f);
 
-        Button playAgainButton = CreateButton(runtimeEndScreenRoot.transform, "PlayAgainButton", "PLAY AGAIN", new Vector2(0.5f, 0.42f));
+        Button playAgainButton = CreatePremiumButton(runtimeEndScreenRoot.transform, "PlayAgainButton", "PLAY AGAIN", new Vector2(0.5f, 0.42f),
+            new Color(0.05f, 0.25f, 0.15f, 0.95f), new Color(0.4f, 1f, 0.6f, 1f));
         playAgainButton.onClick.AddListener(() => SceneManager.LoadScene("GameScene"));
 
-        Button menuButton = CreateButton(runtimeEndScreenRoot.transform, "MainMenuButton", "MAIN MENU", new Vector2(0.5f, 0.30f));
+        Button menuButton = CreatePremiumButton(runtimeEndScreenRoot.transform, "MainMenuButton", "MAIN MENU", new Vector2(0.5f, 0.30f),
+            new Color(0.25f, 0.15f, 0.05f, 0.95f), new Color(1f, 0.8f, 0.3f, 1f));
         menuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
 
         runtimeEndScreenRoot.SetActive(false);
+    }
+
+    private Button CreatePremiumButton(Transform parent, string name, string label, Vector2 anchor, Color bgColor, Color textColor)
+    {
+        GameObject btnObj = new GameObject(name);
+        btnObj.transform.SetParent(parent, false);
+
+        RectTransform rect = btnObj.AddComponent<RectTransform>();
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(580f, 110f);
+
+        Image bg = btnObj.AddComponent<Image>();
+        bg.color = bgColor;
+
+        // Double neon glow border
+        Outline outline = btnObj.AddComponent<Outline>();
+        outline.effectColor = new Color(textColor.r, textColor.g, textColor.b, 0.7f);
+        outline.effectDistance = new Vector2(3f, 3f);
+        Outline outline2 = btnObj.AddComponent<Outline>();
+        outline2.effectColor = new Color(textColor.r, textColor.g, textColor.b, 0.3f);
+        outline2.effectDistance = new Vector2(6f, 6f);
+
+        Button btn = btnObj.AddComponent<Button>();
+        ColorBlock colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f, 1f);
+        colors.pressedColor = new Color(0.7f, 0.7f, 0.7f, 1f);
+        btn.colors = colors;
+
+        TextMeshProUGUI txt = CreateLabel(btnObj.transform, name + "Label", 40, new Vector2(0.5f, 0.5f));
+        txt.text = label;
+        txt.color = textColor;
+        txt.fontStyle = FontStyles.Bold;
+        txt.outlineWidth = 0.15f;
+        txt.outlineColor = new Color(textColor.r * 0.3f, textColor.g * 0.3f, textColor.b * 0.3f, 0.8f);
+        txt.raycastTarget = false;
+
+        return btn;
     }
 
     private TextMeshProUGUI CreateLabel(Transform parent, string objectName, int fontSize, Vector2 anchor)
