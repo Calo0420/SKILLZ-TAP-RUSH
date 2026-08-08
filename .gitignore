@@ -43,3 +43,10 @@ CopilotBridge/*.json
 # Local Android template backups
 Assets/Plugins/Android/*.backup*
 Assets/Plugins/Android/*.backup*.meta
+
+# Signing keys — NEVER commit. Keystore lives on Mac + Trixie backup + Drive only.
+*.keystore
+*.jks
+*.pfx
+*keystore*.txt
+CREDENTIALS_READ_ONCE.txt
