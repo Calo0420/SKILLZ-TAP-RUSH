@@ -18,17 +18,19 @@ public class TargetSpawner : MonoBehaviour
     [SerializeField] private float bonusSpawnChance = 0.08f;
 
     [Header("Gauge Power-Up")]
-    [SerializeField] private float gaugeSpawnInterval = 22f;
+    [SerializeField] private float gaugeSpawnInterval = 14f;
+    [SerializeField] private float gaugeStopBeforeChaos = 20f;
     private float gaugeTimer;
+    private int gaugeSpawnCount;
 
     [Header("Chaos Mode")]
     [SerializeField] private float chaosSpawnRateMultiplier = 2f;
     [SerializeField] private float chaosGoldChanceMultiplier = 1.8f;
     [SerializeField] private float chaosShrinkMultiplier = 1.9f;
     [SerializeField] private float chaosMinSpawnInterval = 0.18f;
-    [SerializeField] private float chaosRedSpawnChance = 0.55f;
-    [SerializeField] private int chaosMinRedPerWave = 2;
-    [SerializeField] private int chaosMaxRedPerWave = 4;
+    [SerializeField] private float chaosRedSpawnChance = 0.35f;
+    [SerializeField] private int chaosMinRedPerWave = 1;
+    [SerializeField] private int chaosMaxRedPerWave = 2;
     [SerializeField] private float chaosWhiteSpawnChance = 0.75f;
 
     [Header("Phase 4.5 Replay Test (temporary debug tools)")]
@@ -109,10 +111,11 @@ public void StartSpawning()
         spawnTimer = 0f;
         currentTarget = null;
         milestoneCount = 0;
-        gaugeTimer = gaugeSpawnInterval;
+        gaugeTimer = 8f; // First gauge appears at 8 seconds in
 
         chaosModeActive = false;
         baseBonusSpawnChance = bonusSpawnChance;
+        gaugeSpawnCount = 0;
 
         ComputeSpawnBounds();
         SpawnInitialBurst();
@@ -202,14 +205,21 @@ void Update()
     {
         if (!spawning || GameManager.Instance == null || !GameManager.Instance.IsGameActive) return;
 
-        // Gauge power-up timer (disabled once chaos mode starts).
+        // Gauge power-up timer (disabled once chaos mode starts or too close to chaos).
         if (!chaosModeActive)
         {
-            gaugeTimer -= Time.deltaTime;
-            if (gaugeTimer <= 0f)
+            float timeRemaining = TimerManager.Instance != null ? TimerManager.Instance.GetTimeRemaining() : 60f;
+            bool tooCloseToChaos = timeRemaining <= gaugeStopBeforeChaos;
+
+            if (!tooCloseToChaos)
             {
-                SpawnGauge();
-                gaugeTimer = gaugeSpawnInterval;
+                gaugeTimer -= Time.deltaTime;
+                if (gaugeTimer <= 0f)
+                {
+                    SpawnGauge();
+                    gaugeTimer = gaugeSpawnInterval;
+                    gaugeSpawnCount++;
+                }
             }
         }
 

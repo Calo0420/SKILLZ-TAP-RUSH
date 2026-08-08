@@ -48,9 +48,23 @@ public class UIManager : MonoBehaviour
 
     private void ConfigureHudLayout()
     {
-        ConfigureTopLabel(scoreText, new Vector2(0.02f, 0.965f), TextAlignmentOptions.TopLeft, new Vector2(520f, 120f), 42f);
-        ConfigureTopLabel(timerText, new Vector2(0.98f, 0.965f), TextAlignmentOptions.TopRight, new Vector2(280f, 120f), 50f);
-        ConfigureTopLabel(comboText, new Vector2(0.5f, 0.965f), TextAlignmentOptions.Top, new Vector2(560f, 120f), 42f);
+        ConfigureTopLabel(scoreText, new Vector2(0.02f, 0.965f), TextAlignmentOptions.TopLeft, new Vector2(520f, 120f), 44f);
+        ConfigureTopLabel(timerText, new Vector2(0.98f, 0.965f), TextAlignmentOptions.TopRight, new Vector2(280f, 120f), 54f);
+        ConfigureTopLabel(comboText, new Vector2(0.5f, 0.965f), TextAlignmentOptions.Top, new Vector2(560f, 120f), 44f);
+
+        // Premium metallic styling
+        StyleHudLabel(scoreText, new Color(0.75f, 0.92f, 0.85f, 1f), new Color(0.1f, 0.3f, 0.2f, 0.8f));
+        StyleHudLabel(timerText, new Color(0.9f, 0.95f, 1f, 1f), new Color(0.1f, 0.15f, 0.3f, 0.8f));
+        StyleHudLabel(comboText, new Color(0.95f, 0.9f, 0.7f, 0.8f), new Color(0.3f, 0.2f, 0.05f, 0.6f));
+    }
+
+    private void StyleHudLabel(TextMeshProUGUI label, Color textColor, Color outlineColor)
+    {
+        if (label == null) return;
+        label.color = textColor;
+        label.fontStyle = FontStyles.Bold;
+        label.outlineWidth = 0.2f;
+        label.outlineColor = outlineColor;
     }
 
     private static void ConfigureTopLabel(TextMeshProUGUI label, Vector2 anchor, TextAlignmentOptions alignment, Vector2 size, float fontSize)
@@ -74,7 +88,7 @@ public class UIManager : MonoBehaviour
     {
         if (scoreText != null)
         {
-            scoreText.text = "Score: " + score;
+            scoreText.text = score.ToString("N0");
             ScorePunchFX punch = scoreText.GetComponent<ScorePunchFX>();
             if (punch == null) punch = scoreText.gameObject.AddComponent<ScorePunchFX>();
             float intensity = GameManager.Instance != null ? Mathf.Clamp01(GameManager.Instance.ComboCount / 15f) : 0.5f;
@@ -108,8 +122,35 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        comboText.text = "Combo x" + Mathf.Max(combo, 0);
-        comboText.color = combo >= 2 ? new Color(1f, 0.95f, 0.45f, 1f) : new Color(1f, 1f, 1f, 0.75f);
+        if (combo == 0)
+        {
+            comboText.text = "";
+        }
+        else
+        {
+            comboText.text = "x" + combo;
+            // Color ramps: white → gold → emerald → platinum as combo climbs
+            if (combo >= 15)
+            {
+                comboText.color = new Color(0.85f, 0.95f, 1f, 1f); // platinum
+                comboText.outlineColor = new Color(0.3f, 0.6f, 0.8f, 0.8f);
+            }
+            else if (combo >= 10)
+            {
+                comboText.color = new Color(0.4f, 1f, 0.6f, 1f); // emerald
+                comboText.outlineColor = new Color(0.1f, 0.4f, 0.2f, 0.8f);
+            }
+            else if (combo >= 5)
+            {
+                comboText.color = new Color(1f, 0.9f, 0.4f, 1f); // gold
+                comboText.outlineColor = new Color(0.4f, 0.3f, 0.05f, 0.8f);
+            }
+            else
+            {
+                comboText.color = new Color(0.85f, 0.88f, 0.9f, 0.85f); // silver
+                comboText.outlineColor = new Color(0.2f, 0.2f, 0.25f, 0.6f);
+            }
+        }
 
         // Update streak bar
         ComboStreakBar.Instance?.UpdateCombo(combo);
@@ -202,10 +243,11 @@ public void ShowChaosAnnouncement()
         {
             chaosAnnouncementText.text = "OH GOD, HERE WE GO!";
             chaosAnnouncementText.gameObject.SetActive(true);
-            chaosAnnouncementText.color = new Color(1f, 0.2f, 0.2f, 1f);
-            chaosAnnouncementText.outlineColor = Color.black;
-            chaosAnnouncementText.outlineWidth = 0.3f;
-            chaosAnnouncementText.fontSize = 92f;
+            chaosAnnouncementText.color = new Color(1f, 0.35f, 0.15f, 1f);
+            chaosAnnouncementText.outlineColor = new Color(0.6f, 0.1f, 0f, 0.9f);
+            chaosAnnouncementText.outlineWidth = 0.25f;
+            chaosAnnouncementText.fontStyle = FontStyles.Bold;
+            chaosAnnouncementText.fontSize = 82f;
         }
 
         float flashTime = 0.2f;
@@ -355,7 +397,7 @@ public void ShowChaosAnnouncement()
         runtimeEndScreenRoot = new GameObject("EndScreenPanel");
         runtimeEndScreenRoot.transform.SetParent(canvasRoot.transform, false);
         Image panelImage = runtimeEndScreenRoot.AddComponent<Image>();
-        panelImage.color = new Color(0f, 0f, 0f, 0.82f);
+        panelImage.color = new Color(0.01f, 0.02f, 0.04f, 0.92f);
 
         RectTransform panelRect = runtimeEndScreenRoot.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
@@ -363,13 +405,25 @@ public void ShowChaosAnnouncement()
         panelRect.offsetMin = Vector2.zero;
         panelRect.offsetMax = Vector2.zero;
 
-        runtimeFinalScoreText = CreateLabel(runtimeEndScreenRoot.transform, "FinalScoreText", 54, new Vector2(0.5f, 0.66f));
-        runtimeFinalScoreText.text = "Final Score: 0";
+        // "GAME OVER" header
+        TextMeshProUGUI gameOverText = CreateLabel(runtimeEndScreenRoot.transform, "GameOverText", 64, new Vector2(0.5f, 0.78f));
+        gameOverText.text = "GAME OVER";
+        gameOverText.fontStyle = FontStyles.Bold;
+        gameOverText.color = new Color(0.8f, 0.85f, 0.9f, 1f);
+        gameOverText.outlineWidth = 0.2f;
+        gameOverText.outlineColor = new Color(0.15f, 0.3f, 0.25f, 0.7f);
 
-        Button playAgainButton = CreateButton(runtimeEndScreenRoot.transform, "PlayAgainButton", "Play Again", new Vector2(0.5f, 0.46f));
+        runtimeFinalScoreText = CreateLabel(runtimeEndScreenRoot.transform, "FinalScoreText", 58, new Vector2(0.5f, 0.62f));
+        runtimeFinalScoreText.text = "0";
+        runtimeFinalScoreText.fontStyle = FontStyles.Bold;
+        runtimeFinalScoreText.color = new Color(0.4f, 1f, 0.6f, 1f);
+        runtimeFinalScoreText.outlineWidth = 0.2f;
+        runtimeFinalScoreText.outlineColor = new Color(0.1f, 0.4f, 0.2f, 0.8f);
+
+        Button playAgainButton = CreateButton(runtimeEndScreenRoot.transform, "PlayAgainButton", "PLAY AGAIN", new Vector2(0.5f, 0.42f));
         playAgainButton.onClick.AddListener(() => SceneManager.LoadScene("GameScene"));
 
-        Button menuButton = CreateButton(runtimeEndScreenRoot.transform, "MainMenuButton", "Main Menu", new Vector2(0.5f, 0.32f));
+        Button menuButton = CreateButton(runtimeEndScreenRoot.transform, "MainMenuButton", "MAIN MENU", new Vector2(0.5f, 0.30f));
         menuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
 
         runtimeEndScreenRoot.SetActive(false);
@@ -395,8 +449,11 @@ public void ShowChaosAnnouncement()
 
     private IEnumerator ShowComboMilestoneRoutine(int comboCount)
     {
-        comboText.color = new Color(1f, 0.92f, 0.35f, 1f);
-        comboText.text = "COMBO x" + comboCount + "!";
+        comboText.color = new Color(1f, 0.85f, 0.2f, 1f);
+        comboText.outlineColor = new Color(0.5f, 0.35f, 0f, 0.9f);
+        comboText.outlineWidth = 0.25f;
+        comboText.text = "x" + comboCount + " STREAK!";
+        comboText.fontSize = 52f;
 
         if (cameraShakeRoutine != null)
         {
@@ -407,6 +464,8 @@ public void ShowChaosAnnouncement()
         yield return new WaitForSeconds(comboMilestoneDisplaySeconds);
 
         comboText.color = Color.white;
+        comboText.fontSize = 44f;
+        comboText.outlineWidth = 0.2f;
         UpdateCombo(GameManager.Instance != null ? GameManager.Instance.ComboCount : 0);
         comboMilestoneRoutine = null;
     }
@@ -494,15 +553,29 @@ public void ShowChaosAnnouncement()
         buttonRect.anchorMin = anchor;
         buttonRect.anchorMax = anchor;
         buttonRect.pivot = new Vector2(0.5f, 0.5f);
-        buttonRect.sizeDelta = new Vector2(340f, 95f);
+        buttonRect.sizeDelta = new Vector2(420f, 100f);
 
         Image buttonImage = buttonObject.AddComponent<Image>();
-        buttonImage.color = new Color(0.12f, 0.25f, 0.45f, 1f);
+        buttonImage.color = new Color(0.08f, 0.2f, 0.15f, 0.9f);
+
+        // Neon border
+        Outline outline = buttonObject.AddComponent<Outline>();
+        outline.effectColor = new Color(0.3f, 0.8f, 0.5f, 0.6f);
+        outline.effectDistance = new Vector2(3f, 3f);
 
         Button button = buttonObject.AddComponent<Button>();
+        ColorBlock colors = button.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
+        colors.pressedColor = new Color(0.7f, 0.7f, 0.7f, 1f);
+        button.colors = colors;
 
-        TextMeshProUGUI labelText = CreateLabel(buttonObject.transform, "Label", 36, new Vector2(0.5f, 0.5f));
+        TextMeshProUGUI labelText = CreateLabel(buttonObject.transform, "Label", 38, new Vector2(0.5f, 0.5f));
         labelText.text = label;
+        labelText.fontStyle = FontStyles.Bold;
+        labelText.color = new Color(0.7f, 1f, 0.8f, 1f);
+        labelText.outlineWidth = 0.15f;
+        labelText.outlineColor = new Color(0.1f, 0.3f, 0.15f, 0.5f);
         labelText.raycastTarget = false;
 
         return button;

@@ -65,22 +65,44 @@ private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
         Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
-        // Tap forgiveness radius — match collider precisely for skill-based accuracy.
-        const float tapRadius = 0.01f;
+        // Slightly forgiving tap radius for mobile fingers
+        const float tapRadius = 0.15f;
         Collider2D[] hits2D = Physics2D.OverlapCircleAll(worldPoint2D, tapRadius);
+
+        // Find the CLOSEST target to tap center (prevents wrong target when overlapping)
+        Target closestTarget = null;
+        float closestDist = float.MaxValue;
+        GaugeTarget closestGauge = null;
+        float closestGaugeDist = float.MaxValue;
+
         for (int i = 0; i < hits2D.Length; i++)
         {
+            float dist = Vector2.Distance(worldPoint2D, (Vector2)hits2D[i].transform.position);
+
             Target target = hits2D[i].GetComponentInParent<Target>();
-            if (target != null && target.TryTap())
+            if (target != null && dist < closestDist)
             {
-                return true;
+                closestDist = dist;
+                closestTarget = target;
             }
 
             GaugeTarget gauge = hits2D[i].GetComponentInParent<GaugeTarget>();
-            if (gauge != null && gauge.RegisterTap())
+            if (gauge != null && dist < closestGaugeDist)
             {
-                return true;
+                closestGaugeDist = dist;
+                closestGauge = gauge;
             }
+        }
+
+        // Gauge takes priority (it's a power-up, player is actively seeking it)
+        if (closestGauge != null && closestGauge.RegisterTap())
+        {
+            return true;
+        }
+
+        if (closestTarget != null && closestTarget.TryTap())
+        {
+            return true;
         }
 
         Ray ray = cam.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y, 0f));

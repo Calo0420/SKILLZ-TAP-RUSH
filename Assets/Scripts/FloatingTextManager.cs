@@ -46,24 +46,23 @@ public class FloatingTextManager : MonoBehaviour
         textMesh.text = text;
         textMesh.fontSize = fontSize;
         textMesh.alignment = TextAlignmentOptions.Center;
+        textMesh.fontStyle = FontStyles.Bold;
         textMesh.outlineWidth = 0.2f;
         
         if (isPenalty)
         {
-            textMesh.color = new Color(1f, 0.2f, 0.2f, 1f);
-            textMesh.outlineColor = new Color(0.3f, 0f, 0f, 1f);
-            textMesh.fontStyle = FontStyles.Bold;
+            textMesh.color = new Color(1f, 0.25f, 0.2f, 1f);
+            textMesh.outlineColor = new Color(0.4f, 0.05f, 0f, 0.9f);
         }
         else if (isBonus)
         {
-            textMesh.color = new Color(1f, 0.85f, 0f, 1f);
-            textMesh.outlineColor = new Color(0.5f, 0.4f, 0f, 1f);
-            textMesh.fontStyle = FontStyles.Bold;
+            textMesh.color = new Color(1f, 0.85f, 0.25f, 1f);
+            textMesh.outlineColor = new Color(0.5f, 0.35f, 0f, 0.9f);
         }
         else
         {
-            textMesh.color = new Color(0.2f, 1f, 0.2f, 1f);
-            textMesh.outlineColor = Color.black;
+            textMesh.color = new Color(0.5f, 1f, 0.7f, 1f);
+            textMesh.outlineColor = new Color(0.1f, 0.3f, 0.15f, 0.8f);
         }
 
         RectTransform textRect = textMesh.rectTransform;

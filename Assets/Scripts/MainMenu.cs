@@ -13,6 +13,7 @@ public class MainMenu : MonoBehaviour
     {
         EnsureSkillzMatchController();
         SetupVisuals();
+        HideSceneCanvas();
 
         // If buttons aren't assigned, build them at runtime
         if (playButton == null || competeButton == null)
@@ -55,6 +56,13 @@ public class MainMenu : MonoBehaviour
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.02f, 0.02f, 0.06f, 1f);
         }
+
+        // Add ambient particles like in-game
+        if (FindAnyObjectByType<AmbientParticles>() == null)
+        {
+            GameObject particlesGO = new GameObject("MenuParticles");
+            particlesGO.AddComponent<AmbientParticles>();
+        }
     }
 
     private void EnsureSkillzMatchController()
@@ -62,6 +70,13 @@ public class MainMenu : MonoBehaviour
         if (SkillzMatchController.Instance != null) return;
         GameObject go = new GameObject("SkillzMatchController");
         go.AddComponent<SkillzMatchController>();
+    }
+
+    private void HideSceneCanvas()
+    {
+        // Hide the old scene Canvas that has the stray "Play" button
+        GameObject sceneCanvas = GameObject.Find("Canvas");
+        if (sceneCanvas != null) sceneCanvas.SetActive(false);
     }
 
     private void BuildMenuUI()
@@ -74,38 +89,82 @@ public class MainMenu : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
+        scaler.matchWidthOrHeight = 0.5f;
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        // Title
-        TextMeshProUGUI title = CreateLabel(canvasObj.transform, "Title", 72, new Vector2(0.5f, 0.75f));
-        title.text = "TAP RUSH";
-        title.fontStyle = FontStyles.Bold;
-        title.color = new Color(0.3f, 1f, 0.5f, 1f);
-        title.outlineWidth = 0.2f;
-        title.outlineColor = new Color(0f, 0.5f, 0.2f, 0.8f);
-        StartCoroutine(PulseTitle(title));
+        // No background image — use game's dark bg + ambient particles (already added in SetupVisuals)
 
-        // Subtitle
-        TextMeshProUGUI subtitle = CreateLabel(canvasObj.transform, "Subtitle", 28, new Vector2(0.5f, 0.68f));
+        // Logo image (no background box)
+        GameObject logoObj = new GameObject("Logo");
+        logoObj.transform.SetParent(canvasObj.transform, false);
+        RectTransform logoRect = logoObj.AddComponent<RectTransform>();
+        logoRect.anchorMin = new Vector2(0.5f, 0.72f);
+        logoRect.anchorMax = new Vector2(0.5f, 0.72f);
+        logoRect.pivot = new Vector2(0.5f, 0.5f);
+        logoRect.sizeDelta = new Vector2(850f, 400f);
+        Image logoImage = logoObj.AddComponent<Image>();
+        Sprite logoSprite = Resources.Load<Sprite>("TapRushLogo");
+        if (logoSprite != null)
+        {
+            logoImage.sprite = logoSprite;
+            logoImage.preserveAspect = true;
+        }
+
+        // Subtitle — brighter, more visible
+        TextMeshProUGUI subtitle = CreateLabel(canvasObj.transform, "Subtitle", 34, new Vector2(0.5f, 0.55f));
         subtitle.text = "by Reyeso Studio";
-        subtitle.color = new Color(0.6f, 0.6f, 0.7f, 0.8f);
+        subtitle.color = new Color(0.85f, 0.9f, 0.95f, 0.95f);
+        subtitle.fontStyle = FontStyles.Italic;
+        subtitle.outlineWidth = 0.15f;
+        subtitle.outlineColor = new Color(0.2f, 0.5f, 0.4f, 0.5f);
 
-        // Practice button
-        playButton = CreateMenuButton(canvasObj.transform, "PracticeBtn", "PRACTICE", new Vector2(0.5f, 0.45f),
-            new Color(0.1f, 0.3f, 0.15f, 1f), new Color(0.3f, 1f, 0.5f, 1f));
+        // Practice button — using image asset
+        playButton = CreateImageButton(canvasObj.transform, "PracticeBtn", "PracticeButton", new Vector2(0.5f, 0.36f), new Vector2(680f, 110f));
         playButton.onClick.AddListener(OnPracticePressed);
         StartCoroutine(ButtonHoverPulse(playButton));
 
-        // Compete button
-        competeButton = CreateMenuButton(canvasObj.transform, "CompeteBtn", "COMPETE", new Vector2(0.5f, 0.35f),
-            new Color(0.3f, 0.15f, 0.05f, 1f), new Color(1f, 0.85f, 0.2f, 1f));
+        // Compete button — using image asset
+        competeButton = CreateImageButton(canvasObj.transform, "CompeteBtn", "CompeteButton", new Vector2(0.5f, 0.24f), new Vector2(680f, 110f));
         competeButton.onClick.AddListener(OnCompetePressed);
         StartCoroutine(ButtonHoverPulse(competeButton));
 
-        // Version text
-        TextMeshProUGUI version = CreateLabel(canvasObj.transform, "Version", 18, new Vector2(0.5f, 0.05f));
+        // Version text — brighter, more visible
+        TextMeshProUGUI version = CreateLabel(canvasObj.transform, "Version", 24, new Vector2(0.5f, 0.06f));
         version.text = "v1.0 — Powered by Skillz";
-        version.color = new Color(0.4f, 0.4f, 0.5f, 0.5f);
+        version.color = new Color(0.7f, 0.75f, 0.8f, 0.8f);
+        version.outlineWidth = 0.1f;
+        version.outlineColor = new Color(0.1f, 0.3f, 0.2f, 0.4f);
+    }
+
+    private Button CreateImageButton(Transform parent, string name, string spriteName, Vector2 anchor, Vector2 size)
+    {
+        GameObject btnObj = new GameObject(name);
+        btnObj.transform.SetParent(parent, false);
+
+        RectTransform rect = btnObj.AddComponent<RectTransform>();
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = size;
+
+        Image bg = btnObj.AddComponent<Image>();
+        Sprite btnSprite = Resources.Load<Sprite>(spriteName);
+        if (btnSprite != null)
+        {
+            bg.sprite = btnSprite;
+            bg.preserveAspect = true;
+            bg.type = Image.Type.Simple;
+        }
+
+        Button btn = btnObj.AddComponent<Button>();
+        ColorBlock colors = btn.colors;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.15f, 1.15f, 1.15f, 1f);
+        colors.pressedColor = new Color(0.75f, 0.75f, 0.75f, 1f);
+        colors.selectedColor = Color.white;
+        btn.colors = colors;
+
+        return btn;
     }
 
     private Button CreateMenuButton(Transform parent, string name, string label, Vector2 anchor, Color bgColor, Color textColor)
@@ -117,23 +176,30 @@ public class MainMenu : MonoBehaviour
         rect.anchorMin = anchor;
         rect.anchorMax = anchor;
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(600f, 120f);
+        rect.sizeDelta = new Vector2(680f, 130f);
 
         Image bg = btnObj.AddComponent<Image>();
         bg.color = bgColor;
 
-        // Rounded look via slight outline
+        // Neon glow border
         Outline outline = btnObj.AddComponent<Outline>();
-        outline.effectColor = textColor * 0.5f;
-        outline.effectDistance = new Vector2(2f, 2f);
+        outline.effectColor = new Color(textColor.r, textColor.g, textColor.b, 0.7f);
+        outline.effectDistance = new Vector2(3f, 3f);
+
+        // Second outline for extra glow
+        Outline outline2 = btnObj.AddComponent<Outline>();
+        outline2.effectColor = new Color(textColor.r, textColor.g, textColor.b, 0.3f);
+        outline2.effectDistance = new Vector2(6f, 6f);
 
         Button btn = btnObj.AddComponent<Button>();
         ColorBlock colors = btn.colors;
-        colors.highlightedColor = bgColor * 1.3f;
-        colors.pressedColor = bgColor * 0.7f;
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(1.2f, 1.2f, 1.2f, 1f);
+        colors.pressedColor = new Color(0.7f, 0.7f, 0.7f, 1f);
+        colors.selectedColor = Color.white;
         btn.colors = colors;
 
-        TextMeshProUGUI txt = CreateLabel(btnObj.transform, name + "Label", 42, new Vector2(0.5f, 0.5f));
+        TextMeshProUGUI txt = CreateLabel(btnObj.transform, name + "Label", 48, new Vector2(0.5f, 0.5f));
         txt.text = label;
         txt.color = textColor;
         txt.fontStyle = FontStyles.Bold;
