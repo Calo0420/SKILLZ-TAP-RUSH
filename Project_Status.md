@@ -163,7 +163,7 @@ Assets/
 |---|-----|----------|--------|
 | 1 | Music doesn't auto-play at game start | Medium | ✅ Fixed (clipChanged tracking) |
 | 2 | Combo resets from expired targets in multi-mode | Medium | ✅ Fixed (miss no longer penalizes) |
-| 3 | Object pooling not used — GC spikes during chaos mode on mobile | Medium | Open |
+| 3 | Object pooling not used — GC spikes during chaos mode on mobile | Medium | ✅ Fixed (TargetPool.cs, commit 464fd4c) |
 | 4 | Square default particles (should be round soft sprites) | Low | ✅ Fixed (procedural soft round texture) |
 
 ---
@@ -242,12 +242,12 @@ Assets/
 4. ~~Screen shake on wrong taps~~ ✅ DONE
 5. ~~Round soft particle sprites~~ ✅ DONE
 6. ~~Animated background~~ ✅ DONE
-7. Integrate object pooler for chaos mode GC performance
+7. ~~Integrate object pooler for chaos mode GC performance~~ ✅ DONE (TargetPool.cs, commit 464fd4c)
 8. ~~Flashing timer during chaos~~ ✅ DONE
 9. ~~Screen glow during chaos~~ ✅ DONE
 10. ~~Deterministic/Seeded RNG (Phase 4.5)~~ ✅ DONE
 11. ~~Skillz SDK integration~~ ✅ WIRED — needs device testing
-12. Device build + Skillz SIDEkick testing
+12. Device build + Skillz SIDEkick testing — release keystore wired + verified (464fd4c), APK release-signed, ready to test
 13. Better fonts (cosmetic, non-blocking)
 
 ---
