@@ -117,8 +117,20 @@ public void StartSpawning()
         baseBonusSpawnChance = bonusSpawnChance;
         gaugeSpawnCount = 0;
 
+        // Pre-warm the object pool
+        EnsureTargetPool();
+        if (targetPrefab != null)
+            TargetPool.Instance.PreWarm(targetPrefab, 25);
+
         ComputeSpawnBounds();
         SpawnInitialBurst();
+    }
+
+    private void EnsureTargetPool()
+    {
+        if (TargetPool.Instance != null) return;
+        GameObject poolGO = new GameObject("TargetPool");
+        poolGO.AddComponent<TargetPool>();
     }
 
     private void ComputeSpawnBounds()
@@ -284,7 +296,17 @@ private void SpawnOne(bool asDecoy, bool asBonus)
         float rolledSize = 0f;
         Vector2 rolledDrift = Vector2.zero;
 
-        GameObject spawned = Instantiate(targetPrefab, pos, Quaternion.identity);
+        GameObject spawned = TargetPool.Instance != null
+            ? TargetPool.Instance.Get(targetPrefab, pos)
+            : Instantiate(targetPrefab, pos, Quaternion.identity);
+
+        // Tag for pool return
+        if (spawned.GetComponent<PoolTag>() == null)
+        {
+            PoolTag tag = spawned.AddComponent<PoolTag>();
+            tag.PoolKey = targetPrefab.name;
+        }
+
         Target target = spawned.GetComponent<Target>();
         if (target == null) target = spawned.GetComponentInChildren<Target>();
 
@@ -331,7 +353,9 @@ private void SpawnGauge()
             0f
         );
 
-        GameObject spawned = Instantiate(targetPrefab, pos, Quaternion.identity);
+        GameObject spawned = TargetPool.Instance != null
+            ? TargetPool.Instance.Get(targetPrefab, pos)
+            : Instantiate(targetPrefab, pos, Quaternion.identity);
 
         // Disable normal target behaviour, add gauge behaviour
         Target t = spawned.GetComponent<Target>();
