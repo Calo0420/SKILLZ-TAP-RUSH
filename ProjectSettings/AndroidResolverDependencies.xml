@@ -43,6 +43,7 @@
     <package>com.google.android.exoplayer:exoplayer:2.11.0</package>
     <package>com.google.android.exoplayer:exoplayer:2.7.3</package>
     <package>com.google.android.gms:play-services-ads-identifier:18.0.1</package>
+    <package>com.google.android.gms:play-services-base:18.0.1</package>
     <package>com.google.android.gms:play-services-base:18.2.0</package>
     <package>com.google.android.gms:play-services-gcm:17.0.0</package>
     <package>com.google.android.gms:play-services-location:21.0.1</package>
@@ -52,7 +53,13 @@
     <package>com.google.code.gson:gson:2.10.1</package>
     <package>com.google.dagger:dagger:2.48.1</package>
     <package>com.google.dagger:dagger-android-support:2.48.1</package>
+    <package>com.google.firebase:firebase-analytics:20.1.2</package>
+    <package>com.google.firebase:firebase-app-unity:8.9.0</package>
+    <package>com.google.firebase:firebase-common:20.1.0</package>
+    <package>com.google.firebase:firebase-iid:21.1.0</package>
+    <package>com.google.firebase:firebase-messaging:23.0.2</package>
     <package>com.google.firebase:firebase-messaging:23.3.1</package>
+    <package>com.google.firebase:firebase-messaging-unity:8.9.0</package>
     <package>com.kochava.base:tracker:3.11.0</package>
     <package>com.reactnative.picker:react-native-picker:2.6.1</package>
     <package>com.reactnativepagerview:react-native-pagerview:6.7.0</package>
@@ -78,7 +85,12 @@
     <package>org.webkit:android-jsc:r245459</package>
     <package>store.galaxy.samsung.installreferrer:samsung_galaxystore_install_referrer:4.0.0</package>
   </packages>
-  <files />
+  <files>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-app-unity/8.9.0/firebase-app-unity-8.9.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-app-unity/8.9.0/firebase-app-unity-8.9.0.pom</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/8.9.0/firebase-messaging-unity-8.9.0.aar</file>
+    <file>Assets/GeneratedLocalRepo/Firebase/m2repository/com/google/firebase/firebase-messaging-unity/8.9.0/firebase-messaging-unity-8.9.0.pom</file>
+  </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a" />
     <setting name="bundleId" value="com.reyesostudio.taprush" />

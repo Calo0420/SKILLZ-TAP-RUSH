@@ -48,3 +48,6 @@ UserSettings/
 [Mm]emoryCaptures/
 [Oo]bj/
 [Tt]emp/
+
+# Firebase desktop-editor-only native libs (not needed for mobile builds, too large for GitHub)
+Assets/Firebase/Plugins/x86_64/

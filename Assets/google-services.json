@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1076161196801",
+    "project_id": "tap-rush-dec8d",
+    "storage_bucket": "tap-rush-dec8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076161196801:android:5cc0692720de345153e100",
+        "android_client_info": {
+          "package_name": "com.reyesostudio.taprush"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdBSzJfLCdzJ14XQyOR_1GR8G7j0ZVAlI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
