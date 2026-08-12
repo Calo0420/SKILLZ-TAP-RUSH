@@ -147,9 +147,16 @@ public void StartSpawning()
             yMin = -h;
             yMax = h;
 
-            // Scale targets relative to screen width so they look consistent across devices
-            // Reference: 16:9 landscape gives ~8.9 units width. Portrait phones are much narrower.
-            float refWidth = 8.9f;
+            // Scale targets relative to screen width so they look consistent across devices.
+            // Portrait phones (mobile) are narrow, so they stay well under the reference and
+            // shrink toward the floor. Landscape (WebGL/desktop browsers) is far wider, so it
+            // needs its own, larger reference — otherwise even a modest browser window blows
+            // past the portrait reference immediately and pins at the 1.0 ceiling, which is
+            // why targets looked oversized in-browser. 22 units keeps a standard ~16:9 browser
+            // window around 0.7x (room to grow for wider windows, shrink for narrower ones)
+            // instead of maxing out on arrival.
+            bool isLandscape = cam.aspect > 1f;
+            float refWidth = isLandscape ? 22f : 8.9f;
             float actualWidth = w * 2f;
             screenScaleFactor = Mathf.Clamp(actualWidth / refWidth, 0.4f, 1f);
         }

@@ -116,6 +116,19 @@ body {
 }
 
 .play-now{
+    background: linear-gradient(135deg, #00e5a0, #00b8d4);
+    color: #04120d;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 229, 160, 0.5);
+}
+
+.play-now:hover{
+    box-shadow: 0 0 14px rgba(0, 229, 160, 0.8);
 }
 
 .match .label{
