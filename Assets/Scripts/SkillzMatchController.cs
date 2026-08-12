@@ -26,6 +26,15 @@ public class SkillzMatchController : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // WebSDK-only: SkillzManager doesn't expose this as an Inspector UnityEvent like
+        // onMatchWillBegin/onSkillzWillExit — it's a static C# event, subscribed in code.
+        SkillzSDK.SkillzEvents.OnReceivedMemoryWarning += OnReceivedMemoryWarning;
+    }
+
+    void OnDestroy()
+    {
+        SkillzSDK.SkillzEvents.OnReceivedMemoryWarning -= OnReceivedMemoryWarning;
     }
 
     /// <summary>
@@ -76,6 +85,17 @@ public class SkillzMatchController : MonoBehaviour
     {
         isSkillzMatch = false;
         Debug.Log("[TapRush] Skillz session ended, returning to menu.");
+    }
+
+    /// <summary>
+    /// Subscribed in Awake() to SkillzSDK.SkillzEvents.OnReceivedMemoryWarning (WebSDK
+    /// only). Fires when the browser signals it's approaching a memory limit.
+    /// Deliberately lightweight: frees caches only, never touches gameplay state.
+    /// </summary>
+    public void OnReceivedMemoryWarning()
+    {
+        Debug.LogWarning("[TapRush] Browser memory warning received — releasing non-critical caches.");
+        Resources.UnloadUnusedAssets();
     }
 
     /// <summary>

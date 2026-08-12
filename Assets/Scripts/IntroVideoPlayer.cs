@@ -23,6 +23,16 @@ public class IntroVideoPlayer : MonoBehaviour
 
     void Start()
     {
+#if UNITY_WEBGL
+        // Skillz WebSDK: the game must be ready to receive OnMatchWillBegin
+        // immediately on launch, so the studio splash video (a pre-Skillz-launch
+        // UX flow, same category as a tutorial/FTUE) is skipped entirely on web —
+        // straight to MainMenu, which itself launches Skillz immediately. See
+        // MainMenu.cs's UNITY_WEBGL branch for the matching fix.
+        SceneManager.LoadScene(nextScene);
+        return;
+#endif
+
         // Black background
         Camera cam = Camera.main;
         if (cam != null)

@@ -12,6 +12,19 @@ public class MainMenu : MonoBehaviour
     void Start()
     {
         EnsureSkillzMatchController();
+
+#if UNITY_WEBGL
+        // Skillz WebSDK: the player already picked a tournament on games.skillz.com
+        // before this build ever loaded, and the SDK expects the game to be ready to
+        // receive OnMatchWillBegin immediately on launch. Tap Rush has no separate
+        // FTUE/tutorial screen to worry about, but our own Practice/Compete menu is
+        // exactly the kind of pre-launch UX Skillz's web docs say must be skipped, so
+        // we bypass it here and launch straight into Skillz instead of waiting for a
+        // Compete button press.
+        SkillzMatchController.Instance.LaunchSkillzTournament();
+        return;
+#endif
+
         SetupVisuals();
         HideSceneCanvas();
 
