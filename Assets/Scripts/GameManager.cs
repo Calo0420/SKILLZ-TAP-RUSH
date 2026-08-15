@@ -220,6 +220,17 @@ public void EndGame()
         // Report score to Skillz if in a tournament match
         SkillzMatchController.Instance?.ReportScore(Score);
 
+#if UNITY_WEBGL
+        // Skip our own end screen entirely on web. Every web playthrough is a real Skillz
+        // match (there's no reachable Practice mode on web — see MainMenu.cs), and this
+        // screen's "PLAY AGAIN"/"MAIN MENU" buttons reload scenes directly, bypassing
+        // Skillz's match flow entirely and leaving their backend/wrapper with no valid
+        // match context — that's what was causing the stuck state Oscar hit. Skillz's own
+        // results screen (triggered by ReportScore -> DisplayTournamentResultsWithScore
+        // above) already shows the score and handles what comes next.
+        return;
+#endif
+
         if (UIManager.Instance != null && UIManager.Instance.ShowEndScreen(Score))
         {
             return;

@@ -23,14 +23,14 @@ public class IntroVideoPlayer : MonoBehaviour
 
     void Start()
     {
-        // Kept on UNITY_WEBGL deliberately, unlike MainMenu's Practice/Compete menu:
-        // this splash auto-continues (or is tap-skippable) without requiring any action,
-        // so it doesn't create a dead end the way a button nobody on web could click
-        // would. Skillz's docs call out FTUE/tutorial flows to skip specifically — a
-        // brief studio splash isn't in that category, and mobile already tolerates
-        // arbitrary delay before LaunchSkillz() fires (players can sit on Practice as
-        // long as they want before ever hitting Compete). Reviewed and confirmed by
-        // Oscar — see MainMenu.cs's UNITY_WEBGL branch for the genuine dead-end fix.
+#if UNITY_WEBGL
+        // Skipped on web per Oscar's final call: the splash isn't visible/perceivable
+        // during Skillz's own matchmaking transition anyway, and playing it (with audio)
+        // before any user gesture is what triggers the browser's autoplay-block gesture
+        // prompt. Skipping it removes both issues at once.
+        SceneManager.LoadScene(nextScene);
+        return;
+#endif
 
         // Black background
         Camera cam = Camera.main;
