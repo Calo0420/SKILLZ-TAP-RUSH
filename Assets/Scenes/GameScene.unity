@@ -496,6 +496,7 @@ MonoBehaviour:
   driftSpeedMax: 1.2
   bonusSpawnChance: 0.08
   gaugeSpawnInterval: 22
+  gaugeStopBeforeChaos: 20
   chaosSpawnRateMultiplier: 2
   chaosGoldChanceMultiplier: 1.8
   chaosShrinkMultiplier: 1.9
@@ -642,12 +643,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '"Score: 0"
-
-'
+  m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
+  m_sharedMaterial: {fileID: 2350092599441910241, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -874,8 +873,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
+  m_sharedMaterial: {fileID: 2350092599441910241, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1338,10 +1337,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '"60"'
+  m_text: 60
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
+  m_sharedMaterial: {fileID: 2350092599441910241, guid: 684c4493c2e5c4e72a8e67b68c2e0e64, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

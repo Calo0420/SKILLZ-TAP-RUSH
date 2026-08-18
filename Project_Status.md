@@ -1,6 +1,6 @@
 # TAP RUSH — Project Status
 
-> **Last Updated:** 2026-08-02 (Clue — restored the Deterministic/Seeded RNG gate as Phase 4.5, retired TAP-RUSH-ROADMAP.md as a stub pointing here)
+> **Last Updated:** 2026-08-18 (Copilot, via Unity Editor MCP — polish pass: fixed the Orbitron font asset and applied it across all screens, removed dead Simple Object Pooler asset, fixed placeholder text bug in GameScene HUD)
 > **THIS IS THE CANONICAL ROADMAP.** TAP-RUSH-ROADMAP.md is now a redirect stub — this file is the single source of truth going forward.
 > **Unity Version:** 6000+  
 > **Target Platform:** Mobile (iOS/Android) via Skillz  
@@ -42,7 +42,6 @@ Assets/
 │   ├── Timofei Shukshin UI Sounds Pack/
 │   ├── Free Pack/
 │   └── Scifi Loops Pack 1/
-├── Simple Object Pooler/        — Imported, not yet integrated
 └── YughuesFreeMetalMaterials/   — Imported for future visual polish
 ```
 
@@ -96,7 +95,7 @@ Assets/
 | Target spawn animation | ✅ Done | Elastic pop-in with wobble |
 | Combo streak bar | ✅ Done | Screen-bottom glow bar, color ramps with combo |
 | Reyeso Studio intro | ✅ Done | Video splash scene with fade + skip support |
-| Better fonts | ❌ TODO | Replace default TMP (cosmetic, non-blocking) |
+| Better fonts | ✅ Done | Orbitron SDF applied project-wide (TMP Settings default + explicit overrides on Main Menu/HUD/EndScreen scene text). See Known Bugs #5 for the root cause of the earlier revert. |
 
 ### Phase 4: Chaos Finale ✅ COMPLETE
 
@@ -165,6 +164,8 @@ Assets/
 | 2 | Combo resets from expired targets in multi-mode | Medium | ✅ Fixed (miss no longer penalizes) |
 | 3 | Object pooling not used — GC spikes during chaos mode on mobile | Medium | ✅ Fixed (TargetPool.cs, commit 464fd4c) |
 | 4 | Square default particles (should be round soft sprites) | Low | ✅ Fixed (procedural soft round texture) |
+| 5 | Orbitron SDF font asset was hand-written YAML, not built via Font Asset Creator — `m_Material: {fileID: 0}` (null), Dynamic atlas mode with an empty character/glyph table, `m_ClearDynamicDataOnBuild: 1`. This is almost certainly why setting it as the TMP default broke text on-device (commit b758da6, 2026-08-08) | High | ✅ Fixed (2026-08-18) — rebuilt in place via `TMP_FontAsset.CreateFontAsset` + `TryAddCharacters` over the full character set actually used in-game (printable ASCII + em dash), baked as **Static** atlas mode with a real material/atlas texture, `m_ClearDynamicDataOnBuild: 0`. GUID preserved. Verified visually in Play mode (Android target) on Main Menu, HUD, and End Screen — clean rendering, no missing glyphs. Still worth a real on-device pass before the next cert build. |
+| 6 | GameScene HUD's `ScoreText`/`TimerText` had leftover placeholder content with stray literal quote marks (`"Score: 0"`, `"60"`) baked into the scene instead of clean values. Runtime code overwrites these correctly during actual gameplay, but the raw placeholder is briefly visible during the `LoadingScreen` "Loading game..." transition since that overlay didn't appear to fully obscure the HUD in testing (unconfirmed root cause — worth a closer look if it recurs) | Low | ✅ Fixed (2026-08-18) — placeholder text corrected to `0` / `60` to match what the code actually sets |
 
 ---
 
@@ -218,7 +219,6 @@ Assets/
 - **Timofei Shukshin UI Sounds Pack** — UI SFX (taps, notifications)
 - **Free Pack** — General audio
 - **Scifi Loops Pack 1** — Background music (Supernova, Battlestations)
-- **Simple Object Pooler** — Performance optimization (not yet integrated)
 - **Yughues Free Metal Materials** — Imported but not used (3D materials don't work in 2D)
 - **Skillz SDK** — Competition platform (not yet integrated into gameplay)
 
@@ -248,9 +248,12 @@ Assets/
 10. ~~Deterministic/Seeded RNG (Phase 4.5)~~ ✅ DONE
 11. ~~Skillz SDK integration~~ ✅ WIRED — needs device testing
 12. Device build + Skillz SIDEkick testing — release keystore wired + verified (464fd4c), APK release-signed, ready to test
-13. Better fonts (cosmetic, non-blocking)
+13. ~~Better fonts~~ ✅ DONE (2026-08-18) — see Known Bugs #5
 14. ~~Mid-match backgrounding/abort handling~~ ✅ DONE — `GameManager.OnApplicationPause()` added per official Skillz Unity docs (freezes `Time.timeScale` on background, resumes on return). Deliberately does NOT call `AbortMatch()` — confirmed via https://docs.skillz.com/docs/aborts that Skillz's SDK auto-detects/categorizes backgrounded/terminated/timeout/crash aborts server-side; calling AbortMatch() ourselves for routine backgrounding would inflate the game's real abort-rate metric. `AbortMatch()` reserved for a possible future in-game "forfeit" button (which per the same doc should submit a real score, not an abort).
 15. ~~Loading scene / SDK-handoff state cleanup~~ ✅ DONE — Copilot built `LoadingScreen.cs` (code-based overlay, not a separate Unity scene) covering the `LaunchSkillz()` handoff. Clue closed the remaining gap on the score-submission handoff (`ReportScore`/`SubmitScore` → `DisplayTournamentResultsWithScore`), which had no loading transition (commit 8e62a79). Both Skillz SDK handoff points now covered per https://docs.skillz.com/docs/launch-skillz-ui.
+16. ~~Remove unused Simple Object Pooler asset~~ ✅ DONE (2026-08-18) — confirmed zero references anywhere in the project (grepped all 4 core script GUIDs against every scene/prefab) before removing; `TargetPool.cs` (Known Bug #3) is the real, in-use pooling implementation. Cut ~1.7MB of dead weight.
+17. APK size / cold-start sanity check — **not verified this pass.** Every existing build in `Builds/` (local, gitignored) predates the Firebase/FCM commit (0a559d8, 2026-08-09 22:08); most recent is `TapRush_Production.apk` at 135MB from earlier the same day. Needs a fresh Android build *after* Firebase to get real numbers — deliberately not built here since Oscar is mid-flight on FCM testing separately and a rebuild would package his in-progress state.
+18. Gauge power-up first-time clarity — soft flag, not acted on. `GaugeTarget.cs` already has decent progressive feedback (color lerp toward white per tap, "CHARGE! x/8" counter, completion sound, "2x POWER!" text), so it likely reads fine without a tutorial, but this is a judgment call for Oscar to make by actually watching a first-time player rather than from code alone.
 
 ---
 
