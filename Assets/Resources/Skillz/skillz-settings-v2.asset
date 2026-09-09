@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: skillz-settings-v2
   m_EditorClassIdentifier: Assembly-CSharp::SkillzSDK.Settings.SkillzSettings
   GameID: 103065
-  Environment: 0
+  Environment: 1
   Orientation: 1
-  IsDebugMode: 1
+  IsDebugMode: 0
   AllowSkillzExit: 1
   HasSyncBot: 0
   MatchTypeTemplates: {fileID: 11400000, guid: f9e3b528f43aa4717893ef5b895dfad5, type: 2}

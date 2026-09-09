@@ -1,6 +1,6 @@
 # TAP RUSH — Project Status
 
-> **Last Updated:** 2026-09-09 (Copilot — App Store release polish pass: zero-GC object pooling across targets/bursts/ripples/text, multi-touch input support with non-alloc queries, native iOS Taptic Engine & mobile haptics [HapticManager], reflex skill rating [+PERFECT!], hardware Safe Area adaptive HUD layout for iPhone Dynamic Island/notch, 60/120 FPS frame rate lock, and iOS bundle identifier set to com.reyesostudio.taprush.)
+> **Last Updated:** 2026-09-09 (Copilot — App Store release polish pass: zero-GC object pooling across targets/bursts/ripples/text, multi-touch input support with non-alloc queries, native iOS Taptic Engine & mobile haptics [HapticManager], reflex skill rating [+PERFECT!], hardware Safe Area adaptive HUD layout for iPhone Dynamic Island/notch, 60/120 FPS frame rate lock, iOS bundle identifier set to com.reyesostudio.taprush. Built production WebGL package `TapRush_WebGL_Production_v1.1.2.zip` and verified Android IL2CPP compilation and packaging.)
 > **THIS IS THE CANONICAL ROADMAP.** TAP-RUSH-ROADMAP.md is now a redirect stub — this file is the single source of truth going forward.
 > **Unity Version:** 6000+  
 > **Target Platform:** Mobile (iOS/Android) via Skillz  
