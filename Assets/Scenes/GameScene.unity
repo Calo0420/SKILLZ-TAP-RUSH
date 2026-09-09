@@ -487,7 +487,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TargetSpawner
   targetPrefab: {fileID: 4242871251765493350, guid: 252fd0e077ae08f429f5466aeb8d34ab, type: 3}
   spawnInterval: 1
-  singleActiveTarget: 1
+  singleActiveTarget: 0
   decoySpawnChance: 0.3
   minSpawnInterval: 0.35
   targetMinScale: 0.5

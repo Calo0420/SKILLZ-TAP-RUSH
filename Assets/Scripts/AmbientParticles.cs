@@ -7,7 +7,6 @@ using UnityEngine;
 public class AmbientParticles : MonoBehaviour
 {
     private ParticleSystem ps;
-    private ParticleSystem.EmissionModule emission;
     private float baseRate = 8f;
     private float maxRate = 35f;
 
@@ -18,11 +17,14 @@ public class AmbientParticles : MonoBehaviour
 
     void Update()
     {
+        if (ps == null) return;
+
         // Scale particle intensity with combo
         float comboNorm = 0f;
         if (GameManager.Instance != null)
             comboNorm = Mathf.Clamp01(GameManager.Instance.ComboCount / 20f);
 
+        var emission = ps.emission;
         emission.rateOverTime = Mathf.Lerp(baseRate, maxRate, comboNorm);
     }
 
@@ -60,7 +62,7 @@ public class AmbientParticles : MonoBehaviour
         );
         main.startColor = new ParticleSystem.MinMaxGradient(startGrad);
 
-        emission = ps.emission;
+        var emission = ps.emission;
         emission.rateOverTime = baseRate;
 
         var shape = ps.shape;

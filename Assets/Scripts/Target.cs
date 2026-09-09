@@ -176,6 +176,8 @@ public void SetAsDecoy()
         CancelInvoke(nameof(Miss));
         StopAllCoroutines();
 
+        TargetSpawner.Instance?.NotifyTargetDespawned(this);
+
         if (TargetPool.Instance != null)
         {
             TargetPool.Instance.Return(gameObject);

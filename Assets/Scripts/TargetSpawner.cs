@@ -107,6 +107,7 @@ public void StartSpawning()
         _debugSpawnIndex = 0;
 
         spawning = true;
+        singleActiveTarget = false;
         spawnInterval = 0.30f;
         spawnTimer = 0f;
         currentTarget = null;
@@ -181,6 +182,14 @@ public void StartSpawning()
         spawning = false;
     }
 
+    public void NotifyTargetDespawned(Target target)
+    {
+        if (currentTarget == target)
+        {
+            currentTarget = null;
+        }
+    }
+
 public void OnComboMilestone(int comboCount)
     {
         milestoneCount++;
@@ -253,7 +262,7 @@ void Update()
             }
         }
 
-        if (!chaosModeActive && singleActiveTarget && currentTarget != null) return;
+        if (!chaosModeActive && singleActiveTarget && currentTarget != null && currentTarget.gameObject.activeInHierarchy) return;
 
         spawnTimer -= Time.deltaTime;
         if (spawnTimer <= 0f)
