@@ -48,9 +48,31 @@ public class UIManager : MonoBehaviour
 
     private void ConfigureHudLayout()
     {
-        ConfigureTopLabel(scoreText, new Vector2(0.02f, 0.965f), TextAlignmentOptions.TopLeft, new Vector2(520f, 120f), 44f);
-        ConfigureTopLabel(timerText, new Vector2(0.98f, 0.965f), TextAlignmentOptions.TopRight, new Vector2(280f, 120f), 54f);
-        ConfigureTopLabel(comboText, new Vector2(0.5f, 0.965f), TextAlignmentOptions.Top, new Vector2(560f, 120f), 44f);
+        // Respect hardware safe area (iPhone notch, Dynamic Island, rounded corners)
+        float topAnchorY = 0.965f;
+        float leftAnchorX = 0.03f;
+        float rightAnchorX = 0.97f;
+
+        if (Screen.height > 0 && Screen.width > 0)
+        {
+            Rect safeArea = Screen.safeArea;
+            float topInsetNorm = (Screen.height - (safeArea.y + safeArea.height)) / (float)Screen.height;
+            if (topInsetNorm > 0.01f)
+            {
+                topAnchorY = Mathf.Min(0.965f, 1f - topInsetNorm - 0.015f);
+            }
+
+            float leftInsetNorm = safeArea.x / (float)Screen.width;
+            if (leftInsetNorm > 0.01f)
+            {
+                leftAnchorX = Mathf.Max(0.03f, leftInsetNorm + 0.02f);
+                rightAnchorX = Mathf.Min(0.97f, 1f - leftInsetNorm - 0.02f);
+            }
+        }
+
+        ConfigureTopLabel(scoreText, new Vector2(leftAnchorX, topAnchorY), TextAlignmentOptions.TopLeft, new Vector2(520f, 120f), 44f);
+        ConfigureTopLabel(timerText, new Vector2(rightAnchorX, topAnchorY), TextAlignmentOptions.TopRight, new Vector2(280f, 120f), 54f);
+        ConfigureTopLabel(comboText, new Vector2(0.5f, topAnchorY), TextAlignmentOptions.Top, new Vector2(560f, 120f), 44f);
 
         // Premium metallic styling
         StyleHudLabel(scoreText, new Color(0.75f, 0.92f, 0.85f, 1f), new Color(0.1f, 0.3f, 0.2f, 0.8f));

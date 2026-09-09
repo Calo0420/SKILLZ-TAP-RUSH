@@ -12,23 +12,36 @@ public class Target : MonoBehaviour
     private Vector3 originalScale;
     private float shrinkRateMultiplier = 1f;
 
-
     private bool isDecoy;
-
     private float spawnTime;
+
+    public bool IsTapped => tapped;
 
     public static void MarkTapConsumedThisFrame()
     {
         lastConsumedTapFrame = Time.frameCount;
     }
 
-    
-public static bool WasTapConsumedThisFrame()
+    public static bool WasTapConsumedThisFrame()
     {
         return Time.frameCount == lastConsumedTapFrame;
     }
 
-public void SetAsBonus()
+    public void ResetState()
+    {
+        tapped = false;
+        isBonus = false;
+        isDecoy = false;
+        driftVelocity = Vector3.zero;
+        shrinkRateMultiplier = 1f;
+        originalScale = Vector3.zero;
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+        CancelInvoke();
+        StopAllCoroutines();
+    }
+
+    public void SetAsBonus()
     {
         isBonus = true;
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -68,23 +81,35 @@ public void SetAsDecoy()
     }
 
 
-void Start()
+    public void ActivateTarget()
     {
         spawnTime = Time.time;
+        CancelInvoke(nameof(Miss));
         Invoke(nameof(Miss), lifetime);
 
-        // Add neon glow + particle burst visuals
-        NeonTargetFX nfx = gameObject.AddComponent<NeonTargetFX>();
+        // Add or reconfigure neon glow + particle visuals
+        NeonTargetFX nfx = GetComponent<NeonTargetFX>();
+        if (nfx == null) nfx = gameObject.AddComponent<NeonTargetFX>();
         if (isDecoy) nfx.SetType(NeonTargetFX.FXType.Decoy);
         else if (isBonus) nfx.SetType(NeonTargetFX.FXType.Bonus);
         else nfx.SetType(NeonTargetFX.FXType.Normal);
 
         // Spawn animation — elastic pop-in
-        gameObject.AddComponent<TargetSpawnAnim>();
+        TargetSpawnAnim anim = GetComponent<TargetSpawnAnim>();
+        if (anim == null) anim = gameObject.AddComponent<TargetSpawnAnim>();
+        anim.Play(transform.localScale);
 
         if (!isDecoy && !isBonus)
         {
             StartCoroutine(ShrinkOverLifetime());
+        }
+    }
+
+    void Start()
+    {
+        if (spawnTime <= 0f)
+        {
+            ActivateTarget();
         }
     }
 
@@ -93,7 +118,7 @@ void Start()
         TryTap();
     }
 
-public bool TryTap()
+    public bool TryTap()
     {
         if (tapped || GameManager.Instance == null || !GameManager.Instance.IsGameActive)
         {
@@ -107,7 +132,6 @@ public bool TryTap()
         if (isDecoy)
         {
             GameManager.Instance?.RegisterWrongTap();
-            // Show floating text for wrong tap
             FloatingTextManager.Instance?.ShowFloatingScore(transform.position, -75, isBonus: false, isPenalty: true);
         }
         else if (isBonus)
@@ -117,7 +141,6 @@ public bool TryTap()
             int bonusPoints = CalculateBonusPoints(speedScore01);
             GameManager.Instance?.RegisterBonusHit(speedScore01);
             
-            // Show floating text at target position
             FloatingTextManager.Instance?.ShowFloatingScore(transform.position, bonusPoints, isBonus: true);
         }
         else
@@ -128,12 +151,12 @@ public bool TryTap()
             float speedScore01 = 1f - Mathf.Clamp01(elapsed / lifetime);
             int normalPoints = CalculateNormalPoints(speedScore01, sizeBonus01);
             GameManager.Instance?.RegisterHit(speedScore01, sizeBonus01);
-            
-            // Show floating text at target position
-            FloatingTextManager.Instance?.ShowFloatingScore(transform.position, normalPoints, isBonus: false);
+
+            bool isPerfect = speedScore01 >= 0.85f;
+            FloatingTextManager.Instance?.ShowFloatingScore(transform.position, normalPoints, isBonus: false, isPenalty: false, isPerfect: isPerfect);
         }
 
-        // Play particle burst before destroying
+        // Play particle burst
         NeonTargetFX nfx = GetComponent<NeonTargetFX>();
         if (nfx != null) nfx.PlayBurst();
 
@@ -144,8 +167,23 @@ public bool TryTap()
         // Screen effects
         if (!isDecoy) ScreenFX.Instance?.OnHit();
 
-        Destroy(gameObject);
+        Despawn();
         return true;
+    }
+
+    private void Despawn()
+    {
+        CancelInvoke(nameof(Miss));
+        StopAllCoroutines();
+
+        if (TargetPool.Instance != null)
+        {
+            TargetPool.Instance.Return(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private int CalculateNormalPoints(float speedScore01, float sizeBonus01)
@@ -186,7 +224,7 @@ private void Miss()
             GameManager.Instance?.RegisterMiss();
         }
 
-        Destroy(gameObject);
+        Despawn();
     }
 
 private System.Collections.IEnumerator ShrinkOverLifetime()

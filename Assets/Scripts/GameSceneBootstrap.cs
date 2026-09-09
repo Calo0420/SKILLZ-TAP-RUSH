@@ -4,7 +4,9 @@ public class GameSceneBootstrap : MonoBehaviour
 {
     void Start()
     {
+        ConfigurePerformanceAndInput();
         SetupVisualEnvironment();
+        EnsureHapticManager();
         EnsureWrongTapDetector();
         EnsureFloatingTextManager();
         EnsureReactiveBackground();
@@ -12,6 +14,26 @@ public class GameSceneBootstrap : MonoBehaviour
 
         // Small delay to ensure all Awake/Start calls finish on GameManager, TimerManager, etc.
         Invoke(nameof(BeginGame), 0.1f);
+    }
+
+    private void ConfigurePerformanceAndInput()
+    {
+        // Unlock mobile framerate: default 60 FPS (or 120 on ProMotion devices)
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 60;
+
+        // Ensure responsive multi-finger tapping across the screen
+        Input.multiTouchEnabled = true;
+
+        // Prevent screen dimming mid-match
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+    }
+
+    private void EnsureHapticManager()
+    {
+        if (HapticManager.Instance != null) return;
+        GameObject hapticGO = new GameObject("HapticManager");
+        hapticGO.AddComponent<HapticManager>();
     }
 
     private void BeginGame()

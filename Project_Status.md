@@ -1,6 +1,6 @@
 # TAP RUSH — Project Status
 
-> **Last Updated:** 2026-08-18 (Copilot, via Unity Editor MCP — polish pass [font fix, dead asset removal, HUD placeholder fix] plus found and fixed the real root cause of the FCM push notification issue: FirebaseApp.androidlib was never wired into the Gradle build, so Firebase never initialized on-device (Known Bugs #7). Also found and fixed a WebGL-only crash on match start caused by an incompatible audio import setting on the two music tracks (Known Bugs #8).)
+> **Last Updated:** 2026-09-09 (Copilot — App Store release polish pass: zero-GC object pooling across targets/bursts/ripples/text, multi-touch input support with non-alloc queries, native iOS Taptic Engine & mobile haptics [HapticManager], reflex skill rating [+PERFECT!], hardware Safe Area adaptive HUD layout for iPhone Dynamic Island/notch, 60/120 FPS frame rate lock, and iOS bundle identifier set to com.reyesostudio.taprush.)
 > **THIS IS THE CANONICAL ROADMAP.** TAP-RUSH-ROADMAP.md is now a redirect stub — this file is the single source of truth going forward.
 > **Unity Version:** 6000+  
 > **Target Platform:** Mobile (iOS/Android) via Skillz  

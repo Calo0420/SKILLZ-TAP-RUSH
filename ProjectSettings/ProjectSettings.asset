@@ -148,7 +148,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 1.0.0
+  bundleVersion: 1.1.1
   preloadedAssets:
   - {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   metroInputSource: 0
@@ -172,13 +172,14 @@ PlayerSettings:
   applicationIdentifier:
     Android: com.reyesostudio.taprush
     Standalone: com.DefaultCompany.2D-URP
+    iPhone: com.reyesostudio.taprush
   buildNumber:
     Standalone: 0
     VisionOS: 0
     iPhone: 0
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
-  AndroidBundleVersionCode: 1
+  AndroidBundleVersionCode: 2
   AndroidMinSdkVersion: 26
   AndroidTargetSdkVersion: 34
   AndroidPreferredInstallLocation: 1
@@ -677,7 +678,7 @@ PlayerSettings:
   webGLWasmArithmeticExceptions: 0
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
-  webGLDecompressionFallback: 0
+  webGLDecompressionFallback: 1
   webGLInitialMemorySize: 512
   webGLMaximumMemorySize: 2048
   webGLMemoryGrowthMode: 0

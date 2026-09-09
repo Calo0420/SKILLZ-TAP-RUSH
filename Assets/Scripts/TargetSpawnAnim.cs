@@ -12,11 +12,21 @@ public class TargetSpawnAnim : MonoBehaviour
     private Vector3 targetScale;
     private bool animating;
 
+    public void Play(Vector3 scale)
+    {
+        targetScale = scale;
+        transform.localScale = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+        elapsed = 0f;
+        animating = true;
+    }
+
     void Start()
     {
-        targetScale = transform.localScale;
-        transform.localScale = Vector3.zero;
-        animating = true;
+        if (!animating)
+        {
+            Play(transform.localScale);
+        }
     }
 
     void Update()
@@ -47,7 +57,6 @@ public class TargetSpawnAnim : MonoBehaviour
             transform.localScale = targetScale;
             transform.rotation = Quaternion.identity;
             animating = false;
-            Destroy(this); // Remove component, job done
         }
     }
 }

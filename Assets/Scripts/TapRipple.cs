@@ -1,51 +1,92 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Spawns a radial shockwave ring at the tap position.
-/// Self-destructs after the animation completes.
+/// Uses a lightweight object pool to eliminate garbage collection.
 /// </summary>
 public class TapRipple : MonoBehaviour
 {
-    private static Material rippleMaterial;
-    private static Mesh quadMesh;
+    private static readonly Queue<TapRipple> RipplePool = new Queue<TapRipple>();
+    private static Transform poolParent;
 
     private float lifetime = 0.4f;
     private float elapsed;
     private float maxRadius = 1.8f;
     private Color rippleColor;
     private SpriteRenderer sr;
+    private bool active;
 
     private static Sprite rippleSprite;
 
     public static void Spawn(Vector3 worldPos, Color color, float scale = 1f)
     {
-        GameObject go = new GameObject("TapRipple");
-        go.transform.position = worldPos;
-        go.transform.localScale = Vector3.zero;
-
-        TapRipple ripple = go.AddComponent<TapRipple>();
-        ripple.rippleColor = color;
-        ripple.maxRadius = 1.8f * scale;
+        TapRipple ripple = GetFromPool();
+        ripple.Play(worldPos, color, scale);
     }
 
-    void Start()
+    private static TapRipple GetFromPool()
+    {
+        while (RipplePool.Count > 0)
+        {
+            TapRipple item = RipplePool.Dequeue();
+            if (item != null)
+            {
+                item.gameObject.SetActive(true);
+                return item;
+            }
+        }
+
+        if (poolParent == null)
+        {
+            GameObject root = new GameObject("TapRipplePool");
+            poolParent = root.transform;
+            DontDestroyOnLoad(root);
+        }
+
+        GameObject go = new GameObject("PooledTapRipple");
+        go.transform.SetParent(poolParent);
+        TapRipple newRipple = go.AddComponent<TapRipple>();
+        newRipple.InitRenderer();
+        return newRipple;
+    }
+
+    private void InitRenderer()
     {
         EnsureRippleSprite();
-
-        sr = gameObject.AddComponent<SpriteRenderer>();
+        sr = gameObject.GetComponent<SpriteRenderer>();
+        if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
         sr.sprite = rippleSprite;
-        sr.color = rippleColor;
         sr.sortingOrder = 10;
+    }
+
+    public void Play(Vector3 worldPos, Color color, float scale)
+    {
+        InitRenderer();
+        transform.position = worldPos;
+        transform.localScale = Vector3.zero;
+        rippleColor = color;
+        maxRadius = 1.8f * scale;
+        elapsed = 0f;
+        active = true;
+
+        Color c = rippleColor;
+        c.a = 0.7f;
+        sr.color = c;
     }
 
     void Update()
     {
+        if (!active) return;
+
         elapsed += Time.deltaTime;
         float t = elapsed / lifetime;
 
         if (t >= 1f)
         {
-            Destroy(gameObject);
+            active = false;
+            gameObject.SetActive(false);
+            RipplePool.Enqueue(this);
             return;
         }
 

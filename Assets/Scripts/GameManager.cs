@@ -97,6 +97,7 @@ public void RegisterHit(float speedScore01, float sizeBonus01 = 0f)
         UIManager.Instance?.UpdateScore(Score);
         UIManager.Instance?.UpdateCombo(ComboCount);
         AudioManager.Instance?.PlayCorrectTap();
+        HapticManager.Instance?.PlayLight();
 
         if (ComboCount > 0 && ComboCount % 5 == 0)
         {
@@ -106,6 +107,7 @@ public void RegisterHit(float speedScore01, float sizeBonus01 = 0f)
             AudioManager.Instance?.PlayComboMilestone();
             UIManager.Instance?.ShowComboMilestone(ComboCount);
             TargetSpawner.Instance?.OnComboMilestone(ComboCount);
+            HapticManager.Instance?.PlayHeavy();
         }
     }
 
@@ -119,12 +121,14 @@ public void RegisterBonusHit(float speedScore01)
         UIManager.Instance?.UpdateScore(Score);
         UIManager.Instance?.UpdateCombo(ComboCount);
         AudioManager.Instance?.PlayBonusHit();
+        HapticManager.Instance?.PlayMedium();
 
         if (ComboCount > 0 && ComboCount % 5 == 0)
         {
             AudioManager.Instance?.PlayComboMilestone();
             UIManager.Instance?.ShowComboMilestone(ComboCount);
             TargetSpawner.Instance?.OnComboMilestone(ComboCount);
+            HapticManager.Instance?.PlayHeavy();
         }
 
         Debug.Log($"[TapRush] BONUS HIT! +{points} pts");
@@ -135,6 +139,7 @@ public void ActivatePowerUp(float duration)
         if (powerUpRoutine != null)
             StopCoroutine(powerUpRoutine);
         powerUpActive = true;
+        HapticManager.Instance?.PlayHeavy();
         powerUpRoutine = StartCoroutine(PowerUpRoutine(duration));
     }
 
@@ -205,6 +210,7 @@ public void ActivatePowerUp(float duration)
         UIManager.Instance?.UpdateScore(Score);
         UIManager.Instance?.PlayWrongTapCameraShake();
         AudioManager.Instance?.PlayWrongTap();
+        HapticManager.Instance?.PlayWarning();
         ScreenFX.Instance?.OnWrongTap();
     }
 

@@ -38,7 +38,7 @@ public class NeonTargetFX : MonoBehaviour
         EnsureSprites();
 
         // Set the main sprite to a filled circle with bright core color
-        mainSR = GetComponent<SpriteRenderer>();
+        if (mainSR == null) mainSR = GetComponent<SpriteRenderer>();
         if (mainSR != null)
         {
             mainSR.sprite = coreSprite;
@@ -46,19 +46,31 @@ public class NeonTargetFX : MonoBehaviour
             mainSR.sortingOrder = 2;
         }
 
-        // Create glow child
+        // Create or update glow child
         glowColor = GetGlowColor(fxType);
-        GameObject glowObj = new GameObject("Glow");
-        glowObj.transform.SetParent(transform, false);
-        glowObj.transform.localPosition = Vector3.zero;
-        glowObj.transform.localScale = Vector3.one * 2.2f;
-        glowSR = glowObj.AddComponent<SpriteRenderer>();
-        glowSR.sprite = glowSprite;
-        glowSR.color = glowColor;
-        glowSR.sortingOrder = 1;
+        if (glowSR == null)
+        {
+            Transform existingGlow = transform.Find("Glow");
+            if (existingGlow != null)
+            {
+                glowSR = existingGlow.GetComponent<SpriteRenderer>();
+            }
+            else
+            {
+                GameObject glowObj = new GameObject("Glow");
+                glowObj.transform.SetParent(transform, false);
+                glowObj.transform.localPosition = Vector3.zero;
+                glowObj.transform.localScale = Vector3.one * 2.2f;
+                glowSR = glowObj.AddComponent<SpriteRenderer>();
+                glowSR.sprite = glowSprite;
+                glowSR.sortingOrder = 1;
+            }
+        }
 
-        // Create particle system for tap burst
-        CreateBurstParticles();
+        if (glowSR != null)
+        {
+            glowSR.color = glowColor;
+        }
     }
 
     private float phaseOffset;
@@ -82,13 +94,7 @@ public class NeonTargetFX : MonoBehaviour
 
     public void PlayBurst()
     {
-        if (burstPS != null)
-        {
-            burstPS.transform.SetParent(null);
-            burstPS.Play();
-            Destroy(burstPS.gameObject, 1.5f);
-            burstPS = null;
-        }
+        TapBurstPool.PlayBurst(transform.position, GetCoreColor(fxType), transform.localScale.x);
     }
 
     // --- Cached soft round particle texture ---

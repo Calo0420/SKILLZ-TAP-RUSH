@@ -4,9 +4,16 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 #endif
 
+/// <summary>
+/// Handles forgiving tap hit detection and registers wrong taps on empty screen space.
+/// Fully supports multi-touch (two-thumb / multi-finger play) with zero GC allocations.
+/// </summary>
 public class WrongTapDetector : MonoBehaviour
 {
-    [SerializeField] private bool debugLogs = true;
+    [SerializeField] private bool debugLogs = false;
+
+    private static readonly Collider2D[] Hits2DBuffer = new Collider2D[24];
+    private static readonly RaycastHit[] Hits3DBuffer = new RaycastHit[16];
 
     void Update()
     {
@@ -15,33 +22,53 @@ public class WrongTapDetector : MonoBehaviour
             return;
         }
 
-        if (!WasPrimaryPressThisFrame())
-        {
-            return;
-        }
-
-        if (Target.WasTapConsumedThisFrame())
-        {
-            return;
-        }
-
-        // NOTE: IsPointerOverGameObject check removed — no interactive buttons
-        // exist during gameplay, and HUD text had raycastTarget disabled.
-        // This prevents dead zones where taps were silently swallowed.
-
         Camera cam = Camera.main;
-        if (cam == null)
-        {
-            return;
-        }
+        if (cam == null) return;
 
-        Vector2 screenPos = GetPointerScreenPosition();
+        // Process all distinct tap presses began this frame (multi-touch supported)
+#if ENABLE_INPUT_SYSTEM
+        if (Touchscreen.current != null)
+        {
+            var touches = Touchscreen.current.touches;
+            int count = touches.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var t = touches[i];
+                if (t.press.wasPressedThisFrame)
+                {
+                    ProcessTapAtScreenPosition(t.position.ReadValue(), cam);
+                }
+            }
+        }
+        else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            ProcessTapAtScreenPosition(Mouse.current.position.ReadValue(), cam);
+        }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.touchCount > 0)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                Touch touch = Input.GetTouch(i);
+                if (touch.phase == UnityEngine.TouchPhase.Began)
+                {
+                    ProcessTapAtScreenPosition(touch.position, cam);
+                }
+            }
+        }
+        else if (Input.GetMouseButtonDown(0))
+        {
+            ProcessTapAtScreenPosition(Input.mousePosition, cam);
+        }
+#endif
+    }
+
+    private void ProcessTapAtScreenPosition(Vector2 screenPos, Camera cam)
+    {
+        // Try forgiving proximity hit on targets first
         if (TryTapTargetAtPointer(screenPos, cam))
-        {
-            return;
-        }
-
-        if (Target.WasTapConsumedThisFrame())
         {
             return;
         }
@@ -55,44 +82,58 @@ public class WrongTapDetector : MonoBehaviour
         }
 
         GameManager.Instance.RegisterWrongTap();
-        
-        // Show floating text for wrong tap
+
+        // Show floating penalty text
         FloatingTextManager.Instance?.ShowFloatingScore(worldPoint, -75, isBonus: false, isPenalty: true);
     }
 
-private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
+    private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
     {
         Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
-        // Slightly forgiving tap radius for mobile fingers
-        const float tapRadius = 0.15f;
-        Collider2D[] hits2D = Physics2D.OverlapCircleAll(worldPoint2D, tapRadius);
+        // Forgiving tap radius for mobile fingers (prevents near-miss frustrations)
+        const float tapRadius = 0.18f;
+        int hitCount2D = Physics2D.OverlapCircleNonAlloc(worldPoint2D, tapRadius, Hits2DBuffer);
 
-        // Find the CLOSEST target to tap center (prevents wrong target when overlapping)
         Target closestTarget = null;
         float closestDist = float.MaxValue;
         GaugeTarget closestGauge = null;
         float closestGaugeDist = float.MaxValue;
 
-        for (int i = 0; i < hits2D.Length; i++)
+        for (int i = 0; i < hitCount2D; i++)
         {
-            float dist = Vector2.Distance(worldPoint2D, (Vector2)hits2D[i].transform.position);
+            Collider2D col = Hits2DBuffer[i];
+            if (col == null) continue;
 
-            Target target = hits2D[i].GetComponentInParent<Target>();
-            if (target != null && dist < closestDist)
+            float dist = Vector2.Distance(worldPoint2D, (Vector2)col.transform.position);
+
+            Target target = col.GetComponentInParent<Target>();
+            if (target != null)
             {
-                closestDist = dist;
-                closestTarget = target;
+                // If this target was already tapped this frame, this touch was part of that valid hit
+                if (target.IsTapped)
+                {
+                    ClearHits2DBuffer(hitCount2D);
+                    return true;
+                }
+
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestTarget = target;
+                }
             }
 
-            GaugeTarget gauge = hits2D[i].GetComponentInParent<GaugeTarget>();
+            GaugeTarget gauge = col.GetComponentInParent<GaugeTarget>();
             if (gauge != null && dist < closestGaugeDist)
             {
                 closestGaugeDist = dist;
                 closestGauge = gauge;
             }
         }
+
+        ClearHits2DBuffer(hitCount2D);
 
         // Gauge takes priority (it's a power-up, player is actively seeking it)
         if (closestGauge != null && closestGauge.RegisterTap())
@@ -105,17 +146,21 @@ private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
             return true;
         }
 
+        // 3D raycast fallback if 3D colliders are present
         Ray ray = cam.ScreenPointToRay(new Vector3(screenPos.x, screenPos.y, 0f));
-        RaycastHit[] hits3D = Physics.RaycastAll(ray);
-        for (int i = 0; i < hits3D.Length; i++)
+        int hitCount3D = Physics.RaycastNonAlloc(ray, Hits3DBuffer);
+        for (int i = 0; i < hitCount3D; i++)
         {
-            Target target = hits3D[i].collider.GetComponentInParent<Target>();
+            RaycastHit hit = Hits3DBuffer[i];
+            if (hit.collider == null) continue;
+
+            Target target = hit.collider.GetComponentInParent<Target>();
             if (target != null && target.TryTap())
             {
                 return true;
             }
 
-            GaugeTarget gauge = hits3D[i].collider.GetComponentInParent<GaugeTarget>();
+            GaugeTarget gauge = hit.collider.GetComponentInParent<GaugeTarget>();
             if (gauge != null && gauge.RegisterTap())
             {
                 return true;
@@ -125,45 +170,11 @@ private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
         return false;
     }
 
-    private static bool WasPrimaryPressThisFrame()
+    private static void ClearHits2DBuffer(int count)
     {
-#if ENABLE_INPUT_SYSTEM
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        for (int i = 0; i < count && i < Hits2DBuffer.Length; i++)
         {
-            return true;
+            Hits2DBuffer[i] = null;
         }
-
-        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
-        {
-            return true;
-        }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-        return Input.GetMouseButtonDown(0);
-#else
-        return false;
-#endif
-    }
-
-    private static Vector2 GetPointerScreenPosition()
-    {
-#if ENABLE_INPUT_SYSTEM
-        if (Mouse.current != null)
-        {
-            return Mouse.current.position.ReadValue();
-        }
-
-        if (Touchscreen.current != null)
-        {
-            return Touchscreen.current.primaryTouch.position.ReadValue();
-        }
-#endif
-
-#if ENABLE_LEGACY_INPUT_MANAGER
-        return Input.mousePosition;
-#else
-        return Vector2.zero;
-#endif
     }
 }

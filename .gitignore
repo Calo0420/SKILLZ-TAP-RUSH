@@ -38,6 +38,7 @@ taprush-release.keystore
 
 # Build artifacts & local state
 CopilotBridge/*.json
+.mcp.json
 ServerData/
 Thumbs.db
 UserSettings/

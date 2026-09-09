@@ -224,6 +224,8 @@ public void EnterChaosMode()
         // Force multi-target pressure by disabling single-active gating in chaos.
         singleActiveTarget = false;
 
+        HapticManager.Instance?.PlayHeavy();
+
         Debug.Log($"[TapRush] CHAOS MODE active. Interval={spawnInterval:F2}s, GoldChance={bonusSpawnChance:F2}");
     }
 
@@ -331,6 +333,7 @@ private void SpawnOne(bool asDecoy, bool asBonus)
             return;
         }
 
+        target.ResetState();
         target.SetShrinkRateMultiplier(chaosModeActive ? chaosShrinkMultiplier : 1f);
 
         if (asDecoy)
@@ -353,6 +356,8 @@ private void SpawnOne(bool asDecoy, bool asBonus)
             target.SetDrift(rolledDrift);
             currentTarget = target;
         }
+
+        target.ActivateTarget();
 
         if (debugLogSpawnSequence)
         {
