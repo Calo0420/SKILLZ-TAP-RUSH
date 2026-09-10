@@ -3,6 +3,7 @@ using UnityEngine;
 public class Target : MonoBehaviour
 {
     [SerializeField] private float lifetime = 2f;
+    private float baseLifetime = 2f;
 
     private static int lastConsumedTapFrame = -1;
 
@@ -27,18 +28,30 @@ public class Target : MonoBehaviour
         return Time.frameCount == lastConsumedTapFrame;
     }
 
+    private void Awake()
+    {
+        baseLifetime = lifetime;
+    }
+
     public void ResetState()
     {
         tapped = false;
         isBonus = false;
         isDecoy = false;
+        lifetime = baseLifetime;
         driftVelocity = Vector3.zero;
         shrinkRateMultiplier = 1f;
-        originalScale = Vector3.zero;
+        originalScale = Vector3.one;
         transform.localScale = Vector3.one;
         transform.rotation = Quaternion.identity;
         CancelInvoke();
         StopAllCoroutines();
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) sr.color = new Color(0.3f, 1f, 0.5f, 1f);
+
+        TargetSpawnAnim anim = GetComponent<TargetSpawnAnim>();
+        if (anim != null) anim.Stop();
     }
 
     public void SetAsBonus()
@@ -87,6 +100,8 @@ public void SetAsDecoy()
         CancelInvoke(nameof(Miss));
         Invoke(nameof(Miss), lifetime);
 
+        originalScale = transform.localScale;
+
         // Add or reconfigure neon glow + particle visuals
         NeonTargetFX nfx = GetComponent<NeonTargetFX>();
         if (nfx == null) nfx = gameObject.AddComponent<NeonTargetFX>();
@@ -97,7 +112,7 @@ public void SetAsDecoy()
         // Spawn animation — elastic pop-in
         TargetSpawnAnim anim = GetComponent<TargetSpawnAnim>();
         if (anim == null) anim = gameObject.AddComponent<TargetSpawnAnim>();
-        anim.Play(transform.localScale);
+        anim.Play(originalScale);
 
         if (!isDecoy && !isBonus)
         {
@@ -126,7 +141,7 @@ public void SetAsDecoy()
         }
 
         tapped = true;
-        lastConsumedTapFrame = Time.frameCount;
+        MarkTapConsumedThisFrame();
         CancelInvoke(nameof(Miss));
 
         if (isDecoy)
@@ -146,7 +161,7 @@ public void SetAsDecoy()
         else
         {
             float elapsed = Time.time - spawnTime;
-            float sizeBonus01 = originalScale == Vector3.zero ? 0f :
+            float sizeBonus01 = (originalScale == Vector3.zero || originalScale.x <= 0f) ? 0f :
                 Mathf.Clamp01(1f - (transform.localScale.x / originalScale.x));
             float speedScore01 = 1f - Mathf.Clamp01(elapsed / lifetime);
             int normalPoints = CalculateNormalPoints(speedScore01, sizeBonus01);
@@ -231,12 +246,15 @@ private void Miss()
 
 private System.Collections.IEnumerator ShrinkOverLifetime()
     {
-        originalScale = transform.localScale;
+        const float popInDuration = 0.25f;
+        yield return new WaitForSeconds(popInDuration);
+
+        float shrinkDuration = Mathf.Max(0.1f, lifetime - popInDuration);
         float elapsed = 0f;
-        while (elapsed < lifetime)
+        while (elapsed < shrinkDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01((elapsed / lifetime) * shrinkRateMultiplier);
+            float t = Mathf.Clamp01((elapsed / shrinkDuration) * shrinkRateMultiplier);
             // Ease-in shrink: starts slow, accelerates toward end
             // Floor at 45% so targets remain fairly tappable at end of life
             float scale = Mathf.Lerp(1f, 0.45f, t * t);

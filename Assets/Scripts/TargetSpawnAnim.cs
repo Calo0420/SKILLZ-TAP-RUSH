@@ -21,6 +21,11 @@ public class TargetSpawnAnim : MonoBehaviour
         animating = true;
     }
 
+    public void Stop()
+    {
+        animating = false;
+    }
+
     void Start()
     {
         if (!animating)

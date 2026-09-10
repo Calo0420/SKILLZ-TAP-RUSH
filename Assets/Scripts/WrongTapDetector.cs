@@ -67,13 +67,25 @@ public class WrongTapDetector : MonoBehaviour
 
     private void ProcessTapAtScreenPosition(Vector2 screenPos, Camera cam)
     {
+        // If a target was already tapped this frame (e.g. by OnMouseDown or a previous touch), ignore
+        if (Target.WasTapConsumedThisFrame())
+        {
+            return;
+        }
+
         // Try forgiving proximity hit on targets first
         if (TryTapTargetAtPointer(screenPos, cam))
         {
             return;
         }
 
-        Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
+        if (Target.WasTapConsumedThisFrame())
+        {
+            return;
+        }
+
+        float zDist = Mathf.Abs(cam.transform.position.z);
+        Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, zDist));
         Vector2 point2D = new Vector2(worldPoint.x, worldPoint.y);
 
         if (debugLogs)
@@ -89,11 +101,12 @@ public class WrongTapDetector : MonoBehaviour
 
     private static bool TryTapTargetAtPointer(Vector2 screenPos, Camera cam)
     {
-        Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
+        float zDist = Mathf.Abs(cam.transform.position.z);
+        Vector3 worldPoint = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, zDist));
         Vector2 worldPoint2D = new Vector2(worldPoint.x, worldPoint.y);
 
         // Forgiving tap radius for mobile fingers (prevents near-miss frustrations)
-        const float tapRadius = 0.18f;
+        const float tapRadius = 0.4f;
         int hitCount2D = Physics2D.OverlapCircleNonAlloc(worldPoint2D, tapRadius, Hits2DBuffer);
 
         Target closestTarget = null;
